@@ -2913,3 +2913,68 @@ Tier 3: Personal Overrides (user's dotfiles repo)
 - https://nikiforovall.blog/productivity/devcontainers/2022/08/13/deaac.html
 - https://www.daytona.io/dotfiles/ultimate-guide-to-dev-containers
 ================================================================================
+
+================================================================================
+[ARCHITECTURE] GitHub Organization Structure & Package Analysis
+Timestamp: 2026-01-23
+================================================================================
+
+## JADE IDE ORGANIZATION STRUCTURE
+
+```
+github.com/jade-ide/
+├── jade-ide         [FORK]   VS Code fork - core IDE product
+├── jade-cli         [BUILD]  Standalone terminal agent
+├── jade-core        [BUILD]  Shared libraries (config, entity, team)
+├── jade-ai          [BUILD]  Multi-model AI orchestration
+├── jade-proto       [BUILD]  MCP/ACP/A2A protocol bridge
+├── jade-server      [BUILD]  Backend services (auth, billing, sync)
+├── dotfiles-claude  [BUILD]  Shared .claude configurations
+├── .github          [BUILD]  Org-wide workflows
+├── terraform-infra  [BUILD]  Infrastructure as code
+├── docs             [BUILD]  Documentation site
+└── examples         [BUILD]  Example projects
+```
+
+## FORK vs BUILD SUMMARY
+
+| Package      | Decision | Rationale                                    |
+|--------------|----------|----------------------------------------------|
+| VS Code      | FORK     | 15M LOC, impossible to rebuild, MIT license |
+| Claude Code  | STUDY    | Reference only, respect TOS                  |
+| jade-core    | BUILD    | Unique value: 4-tier config, entity system   |
+| jade-ai      | BUILD    | Multi-model support differentiator           |
+| jade-cli     | BUILD    | Standalone product, Claude Code alternative  |
+| jade-proto   | BUILD    | Unified MCP+ACP+A2A bridge                   |
+| jade-server  | BUILD    | Auth, billing, team sync                     |
+
+## DEPENDENCY GRAPH
+
+```
+                    UPSTREAM
+    ┌────────────────────────────────────┐
+    │ vscode │ @anthropic/sdk │ acp-sdk  │
+    └───┬────────────┬──────────────┬────┘
+        │            │              │
+     FORK         DEPEND         DEPEND
+        │            │              │
+        ▼            ▼              ▼
+    jade-ide ◄── jade-ai ◄── jade-proto
+        │            │              │
+        └────────────┼──────────────┘
+                     │
+                jade-core
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+      jade-cli            jade-server
+```
+
+## DEVELOPMENT PRIORITY
+
+Phase 1 (Months 1-2): jade-core → jade-ai → jade-proto
+Phase 2 (Months 2-3): jade-cli (MVP product)
+Phase 3 (Months 3-5): jade-ide (VS Code fork)
+Phase 4 (Months 5-7): jade-server (platform)
+
+================================================================================
