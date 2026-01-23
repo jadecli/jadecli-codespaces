@@ -1,0 +1,111 @@
+# ---
+# entity_id: config-pre-commit
+# entity_name: Pre-commit Configuration
+# entity_type_id: config
+# entity_path: .pre-commit-config.yaml
+# entity_language: yaml
+# entity_state: active
+# entity_created: 2026-01-22T17:00:00Z
+# entity_exports: []
+# entity_dependencies: []
+# entity_semver_impact: patch
+# ---
+
+# Pre-commit hooks for code quality and conventional commits
+# See https://pre-commit.com for more information
+
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  # === Conventional Commits ===
+  # Enforces https://www.conventionalcommits.org/en/v1.0.0/
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.4.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat      # New feature
+          - fix       # Bug fix
+          - docs      # Documentation only
+          - style     # Formatting, no code change
+          - refactor  # Code change that neither fixes bug nor adds feature
+          - perf      # Performance improvement
+          - test      # Adding/correcting tests
+          - build     # Build system or external dependencies
+          - ci        # CI configuration
+          - chore     # Other changes that don't modify src or test
+          - revert    # Reverts a previous commit
+          - wip       # Work in progress (for draft commits)
+
+  # === Python Code Quality ===
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.10.0
+          - pydantic-settings>=2.6.0
+          - click>=8.1.0
+          - rich>=13.9.0
+        args: [--ignore-missing-imports]
+
+  # === TypeScript/JavaScript ===
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        types_or: [javascript, jsx, ts, tsx, json, yaml, markdown]
+
+  # === General ===
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master]
+
+  # === Security ===
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [--baseline, .secrets.baseline]
+        exclude: \.env\.example$
+
+  # === Frontmatter Validation ===
+  - repo: local
+    hooks:
+      - id: validate-frontmatter
+        name: Validate Entity Frontmatter
+        entry: python -m entity_store.validate_frontmatter
+        language: python
+        types: [python]
+        additional_dependencies:
+          - pydantic>=2.10.0
+          - pyyaml>=6.0.0
+        pass_filenames: true
+
+      - id: check-breaking-changes
+        name: Check Breaking Changes
+        entry: python -m entity_store.check_breaking_changes
+        language: python
+        stages: [pre-push]
+        additional_dependencies:
+          - pydantic>=2.10.0
+          - pyyaml>=6.0.0
+        pass_filenames: false

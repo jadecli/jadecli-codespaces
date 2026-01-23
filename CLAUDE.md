@@ -1,6 +1,6 @@
 # jadecli-codespaces
 
-<!-- @meta version: 1.0 | updated: 2026-01-22 | owner: alex-jadecli -->
+<!-- @meta version: 2.0 | updated: 2026-01-22 | owner: alex-jadecli -->
 
 ---
 
@@ -10,6 +10,41 @@ Shared context repository for **multi-agent Claude collaboration** across:
 - Local WSL sessions (26.04-jadecli)
 - GitHub Codespaces
 - Multiple concurrent Claude Code instances
+
+**Key Features:**
+- AST-based entity indexing with Tree-sitter/Python AST
+- Frontmatter-based dependency tracking for breaking change detection
+- Parallel Claude API support via Python/TypeScript SDKs
+- Architecture visualization and sequence diagrams
+
+---
+
+## ⚠️ IMPORTANT: Configuration & Secrets
+
+### Never Hardcode Secrets
+
+All secrets and configuration MUST be accessed through `cli/settings.py`:
+
+```python
+# ✅ CORRECT
+from cli.settings import settings
+api_key = settings.parallel_apikey
+
+# ❌ WRONG - Never do this
+api_key = "sk-abc123..."  # Hardcoded
+api_key = os.environ["API_KEY"]  # Direct env access
+```
+
+### Settings Files
+
+| File | Purpose | Committed? |
+|------|---------|------------|
+| `cli/settings.py` | Pydantic Settings class | ✅ Yes |
+| `.env` | Local secrets | ❌ No (gitignored) |
+| `.env.example` | Template for .env | ✅ Yes |
+| GitHub Secrets | CI/CD secrets | N/A |
+
+See `.claude/rules/settings.md` for full documentation.
 
 ---
 
@@ -193,3 +228,310 @@ claude
 2. Run `/lock-status` to see current state
 3. Use `/checkout` before any edits
 4. Use `/checkin` when done
+
+---
+
+## Entity Store System
+
+### Overview
+
+AST-based indexing system that extracts entities from code and tracks dependencies for:
+- **Token Reduction**: Query metadata without reading full files
+- **Breaking Change Detection**: Trace dependencies up/down the chain
+- **Architecture Diagrams**: Auto-generate ASCII visualizations
+- **Sequence Diagrams**: Actor interactions (dev, claude, user, coderabbit)
+
+### Enhanced Frontmatter Schema
+
+Every code file should have frontmatter with dependency tracking:
+
+```python
+# ---
+# entity_id: module-settings
+# entity_name: Centralized Settings
+# entity_type_id: module
+# entity_path: cli/settings.py
+# entity_language: python
+# entity_state: active
+# entity_created: 2026-01-22T17:00:00Z
+#
+# Dependencies (for graph construction):
+# entity_imports: [pydantic_settings]
+# entity_exports: [Settings, settings, get_settings]
+# entity_dependencies: [pydantic_settings]
+#
+# Call Graph (for sequence diagrams):
+# entity_callers: [entity_store, entity_cli, hooks]
+# entity_callees: []
+#
+# Versioning (for breaking change detection):
+# entity_semver_impact: major
+# entity_breaking_change_risk: high
+# entity_public_api: true
+#
+# Actors (for sequence diagrams):
+# entity_actors: [dev, claude]
+# ---
+```
+
+### Frontmatter Fields
+
+| Field | Purpose |
+|-------|---------|
+| `entity_id` | Unique identifier |
+| `entity_name` | Human-readable name |
+| `entity_type_id` | class/function/method/module/config |
+| `entity_imports` | Modules this entity imports |
+| `entity_exports` | Symbols this entity exports |
+| `entity_dependencies` | Entity IDs this depends on |
+| `entity_callers` | Entities that call this (incoming) |
+| `entity_callees` | Entities this calls (outgoing) |
+| `entity_semver_impact` | major/minor/patch |
+| `entity_breaking_change_risk` | high/medium/low |
+| `entity_actors` | dev/claude/user/coderabbit |
+
+### Entity Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/entity-query` | Query entities with filters |
+| `/entity-list` | List entities (table or tree) |
+| `/entity-register` | Register new entity |
+
+### Benefits for Claude
+
+1. **Fewer file reads**: Query frontmatter instead of parsing full files
+2. **Dependency awareness**: Know what breaks before making changes
+3. **Architecture context**: Understand structure without exploration
+4. **Token savings**: ~90% reduction via field projection
+
+---
+
+## Conventional Commits & Semver
+
+### Commit Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Types
+
+| Type | Semver | Description |
+|------|--------|-------------|
+| `feat` | MINOR | New feature |
+| `fix` | PATCH | Bug fix |
+| `feat!` | MAJOR | Breaking change |
+| `docs` | - | Documentation |
+| `refactor` | PATCH | Code refactoring |
+| `perf` | PATCH | Performance |
+| `test` | - | Tests |
+| `chore` | - | Maintenance |
+
+### Breaking Changes
+
+For breaking changes:
+1. Use `feat!:` or `fix!:` prefix
+2. Or add `BREAKING CHANGE:` in footer
+3. This triggers MAJOR version bump
+
+### Pre-commit Hooks
+
+```bash
+# Install pre-commit
+uv pip install pre-commit
+pre-commit install --install-hooks
+
+# Hooks will run on:
+# - pre-commit: Linting, formatting, frontmatter validation
+# - commit-msg: Conventional commit enforcement
+# - pre-push: Breaking change analysis
+```
+
+---
+
+## Parallel API Usage
+
+### Configuration
+
+Set up parallel Claude API access:
+
+```bash
+# In .env (local)
+PARALLEL_APIKEY=your-api-key
+
+# In cli/settings.py (code)
+from cli.settings import settings
+api_key = settings.parallel_apikey
+```
+
+### Python SDK
+
+```python
+from anthropic import Anthropic
+from cli.settings import settings
+
+client = Anthropic(api_key=settings.parallel_apikey)
+```
+
+### TypeScript SDK
+
+```typescript
+import Anthropic from '@anthropic-ai/sdk';
+// API key loaded from environment via bridge
+
+const client = new Anthropic();
+```
+
+---
+
+## Directory Structure
+
+```
+jadecli-codespaces/
+├── .claude/
+│   ├── settings.json
+│   ├── rules/
+│   │   ├── file-locking.md
+│   │   ├── entity-store.md
+│   │   └── settings.md         # ← Configuration rule
+│   ├── commands/
+│   │   ├── checkout.md
+│   │   ├── checkin.md
+│   │   ├── entity-query.md     # ← Entity queries
+│   │   ├── entity-list.md
+│   │   └── entity-register.md
+│   └── hooks/
+│       ├── session-start.py     # ← Entity indexing
+│       └── post-tool-use.py     # ← Cache invalidation
+├── cli/
+│   ├── __init__.py
+│   └── settings.py              # ← Centralized settings
+├── entity_store/
+│   ├── __init__.py
+│   ├── models.py                # ← Entity Pydantic models
+│   ├── frontmatter.py           # ← Enhanced frontmatter
+│   ├── registry.py
+│   ├── neon_client.py
+│   ├── cache.py
+│   ├── visualize.py             # ← ASCII diagrams
+│   ├── validate_frontmatter.py  # ← Pre-commit hook
+│   ├── check_breaking_changes.py
+│   ├── parsers/
+│   │   ├── python_parser.py
+│   │   ├── typescript_parser.py
+│   │   └── markdown_parser.py
+│   └── query/
+│       └── graphql.py
+├── entity_cli/                   # ← React Ink CLI
+├── context/
+│   ├── sessions/
+│   ├── decisions/
+│   └── knowledge/
+├── .env.example                  # ← Environment template
+├── .pre-commit-config.yaml       # ← Pre-commit hooks
+├── .releaserc.json               # ← Semantic release
+├── pyproject.toml
+└── schema.sql                    # ← Neon PostgreSQL schema
+```
+
+---
+
+## Visualization Examples
+
+### Architecture Tree
+
+```
+entity_store/
+├── models.py [Entity, EntityType] ⚠️
+│   ├── [class] Entity
+│   └── [class] EntityType
+├── registry.py [EntityRegistry]
+│   └── [class] EntityRegistry
+└── parsers/
+    ├── python_parser.py [PythonParser]
+    └── typescript_parser.py
+```
+
+### Dependency Graph
+
+```
+UPSTREAM (dependencies):
+├── pydantic.BaseModel
+├── datetime.datetime
+└── uuid.UUID
+
+══════════════════════════════════════════════════
+         ┌─────────┐
+         │ Entity  │ ⚠️ HIGH RISK
+         └─────────┘
+══════════════════════════════════════════════════
+
+DOWNSTREAM (dependents):
+├── EntityRegistry
+│   ├── parse_file()
+│   └── register()
+├── PythonParser
+└── EntityCache
+```
+
+### Sequence Diagram
+
+```
+    dev          claude       registry      neon
+     │             │             │            │
+     │──request───>│             │            │
+     │             │──parse─────>│            │
+     │             │             │──query────>│
+     │             │             │<───data────│
+     │             │<──entities──│            │
+     │<──response──│             │            │
+```
+
+---
+
+## Quick Reference
+
+### Environment Setup
+
+```bash
+# Install dependencies
+uv pip install -e ".[dev]"
+
+# Set up pre-commit
+pre-commit install --install-hooks
+
+# Copy env template
+cp .env.example .env
+# Edit .env with your keys
+```
+
+### Daily Workflow
+
+```bash
+# 1. Pull latest
+git pull --rebase
+
+# 2. Check lock status
+/lock-status
+
+# 3. Checkout file
+/checkout <file>
+
+# 4. Make changes
+
+# 5. Checkin
+/checkin <file>
+
+# 6. Commit (conventional)
+git commit -m "feat(entity): add dependency tracking"
+
+# 7. Push
+git push
+```
