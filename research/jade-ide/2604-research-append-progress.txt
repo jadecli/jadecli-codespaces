@@ -1373,3 +1373,1543 @@ Sources:
 - Orchestration: Agent HQ, Conductor, MCP
 
 ================================================================================
+
+================================================================================
+[AGENT: VSCODE-FORK] Web Research Results
+Timestamp: 2026-01-23T08:45:00Z
+================================================================================
+
+## 1. HOW CURSOR FORKED VS CODE
+
+### Core Architecture Decision
+Cursor is a proprietary fork of VS Code developed by Anysphere, a San Francisco-based 
+startup founded in 2022 by four MIT students. Rather than building an extension, they 
+chose to fork VS Code entirely to gain "root access" to the developer workflow.
+
+### Why Fork Instead of Extension?
+VS Code's extension API was never designed for deep, system-level AI integration. 
+Extensions cannot:
+- Spawn hidden editor instances
+- Intercept the Language Server Protocol at the kernel level
+- Smooth-animate cursor teleportation
+- Read terminal output natively and inject commands
+- Perform complex, multi-file refactors with full codebase awareness
+
+By forking, Anysphere gained access to the C++ and TypeScript internals of the editor.
+
+### Key Technical Modifications
+
+**Shadow Workspace:**
+- Spawns hidden Electron windows to validate AI-generated code changes
+- Applies AI suggestions in shadow instances, runs LSP to check for linting errors
+- If errors found, AI fixes them before showing user the suggestion
+- Creates illusion that AI never makes syntax mistakes
+- Current implementation: hidden Electron window
+- Future plans: kernel-level folder proxy
+- Limitation: Does not fully support Rust (rust-analyzer requires disk writes)
+
+**Native Diff Rendering:**
+- Renders AI suggestions as inline color-coded overlays directly in active file
+- Impossible via standard extension API
+
+**Terminal Interception:**
+- Reads terminal output natively and injects commands
+- Allows AI to see exact compilation errors and run fixes automatically
+
+### Performance & Scale
+- Backend sees 1M+ queries per second for autocomplete
+- Uses speculative decoding: small model drafts, large model verifies in parallel
+- Shadow workspace optimized by sharing extension host process, killing idle instances
+- Repository-wide understanding via embedding-based codebase indexing
+- Extended context windows up to 272k tokens
+
+### Business Impact
+- $100M ARR in February 2025
+- $200M ARR in March 2025
+- $300M ARR in May 2025
+- Valued at $29B
+
+Sources:
+- https://www.mmntm.net/articles/cursor-deep-dive
+- https://cursor.com/blog/shadow-workspace
+- https://dev.to/pullflow/forked-by-cursor-the-hidden-cost-of-vs-code-fragmentation-4p1
+- https://blog.bytebytego.com/p/how-cursor-serves-billions-of-ai
+
+================================================================================
+
+## 2. EXTENSION HOST ARCHITECTURE CHANGES FOR AI INTEGRATION
+
+### VS Code's Native AI Architecture (2025)
+
+**Copilot Extension Consolidation:**
+Microsoft is merging the separate GitHub Copilot extension (ghost text) and Copilot Chat
+extension (chat, next edit suggestions) into a single extension. The standalone Copilot
+extension will be deprecated by early 2026.
+
+**AI Extensibility APIs:**
+- Language Model Tools API: Extensions can implement LM tools with full VS Code API access
+- Model Context Protocol (MCP) tools: Standardized protocol for external service integration
+- MCP tools run outside VS Code (locally or remote), auto-invoked in agent mode
+
+**Agent Skills (VS Code 1.108 - Experimental):**
+- Enables developers to define reusable, domain-specific automation
+- Handles code refactoring, custom text formatting, etc.
+
+**Agent Architecture Shift:**
+Microsoft killed IntelliCode in VS Code 1.107 (November 2025), forcing transition to
+subscription-based GitHub Copilot ecosystem with newer "agent" architecture.
+
+### Open Source AI Editor Initiative (Microsoft 2025)
+
+**May 2025 - Build Announcement:**
+- CEO Satya Nadella announced open-sourcing GitHub Copilot Chat extension under MIT
+- Progressive refactoring of core AI components into editor's public repository
+
+**June 2025 - First Milestone:**
+- GitHub Copilot Chat extension open-sourced
+
+**November 2025 - Second Milestone:**
+- Inline suggestions (ghost text) open-sourced
+- Next phase: Refactor AI features from Copilot Chat extension into VS Code core
+
+This enables forks to build on the AI infrastructure without reimplementing from scratch.
+
+Sources:
+- https://code.visualstudio.com/blogs/2025/05/19/openSourceAIEditor
+- https://code.visualstudio.com/blogs/2025/11/04/openSourceAIEditorSecondMilestone
+- https://visualstudiomagazine.com/articles/2025/06/09/microsoft-delays-vs-code-may-2025-release-pushes-ahead-on-copilot-chat-open-sourcing.aspx
+- https://winbuzzer.com/2025/11/06/microsoft-open-sources-github-copilot-inline-code-suggestions-in-vs-code-xcxwbn/
+
+================================================================================
+
+## 3. KIRO'S SPEC-DRIVEN DEVELOPMENT APPROACH
+
+### Overview
+Kiro is AWS's spec-driven, agentic AI IDE based on VS Code, launched in preview mid-2025.
+Powered by Anthropic's Claude (Sonnet 4.5 or Auto mode with multiple frontier models).
+
+### Spec-Driven Development Model
+Unlike "vibe coding" (prompt-based), Kiro uses structured specifications:
+
+**Three Specification Files (in .kiro/ directory):**
+1. `requirements.md` - Uses EARS (Easy Approach to Requirements Syntax)
+   - User stories with acceptance criteria
+2. `design.md` - Technical design document
+   - Tech stack and architecture decisions
+3. `tasks.md` - Implementation task list
+   - Steps needed to implement the design
+
+Developers describe requirements in natural language; Kiro generates all three artifacts.
+
+### Agent Hooks (Event-Driven Automation)
+- Monitors filesystem changes (file creation, saving, deletion)
+- Triggers AI actions in background:
+  - Security scans
+  - Style checks
+  - Full test suites
+- Similar concept to Git hooks but AI-powered
+
+### Agent Steering
+- Persistent project-specific knowledge via markdown files
+- Stored in `.kiro/steering/` directory
+- Guides AI behavior according to:
+  - Project conventions
+  - Architectural decisions
+  - Business context
+
+### Technical Details
+- Supports Open VSX-compatible plugins (not VS Marketplace)
+- Currently supports Python and JavaScript
+- Pricing: $20/month (preview)
+- No AWS account required for basic use
+
+### Positioning
+Kiro targets a different layer than Copilot:
+- Copilot/Gemini = productivity tools
+- Kiro = structure enforcer (planning, design, QA, infra in single loop)
+
+Sources:
+- https://kiro.dev/
+- https://www.infoq.com/news/2025/08/aws-kiro-spec-driven-agent/
+- https://devclass.com/2025/07/15/hands-on-with-kiro-the-aws-preview-of-an-agentic-ai-ide-driven-by-specifications/
+- https://thenewstack.io/aws-kiro-testing-an-ai-ide-with-a-spec-driven-approach/
+- https://visualstudiomagazine.com/articles/2025/07/21/forked-again-awss-kiro-latest-ai-assistant-based-on-vs-code.aspx
+
+================================================================================
+
+## 4. VS CODE OPEN SOURCE VS PROPRIETARY COMPONENTS
+
+### Dual-License Structure
+
+**Code - OSS (MIT Licensed):**
+- Source code available on GitHub: github.com/microsoft/vscode
+- MIT license allows forking, modification, commercial use
+- This is what Cursor, Windsurf, Kiro, and VSCodium fork
+
+**Visual Studio Code (Microsoft Product License):**
+- Built from Code - OSS with Microsoft-specific additions
+- NOT fully open source - proprietary license
+- Includes telemetry/tracking by default
+
+### Proprietary Components (Cannot Be Forked)
+
+1. **Microsoft Icons/Branding:**
+   - VS Code-specific icons and assets
+   - Forks must create their own branding
+
+2. **Visual Studio Marketplace:**
+   - Extensions acquired from VS Marketplace NOT licensed for forks
+   - Microsoft explicitly restricts: "We do not license extensions from Microsoft
+     or its affiliates that are published to and acquired from the Visual Studio
+     Marketplace for use outside of the Visual Studio family of products"
+   - Forks must use Open VSX or implement own marketplace
+
+3. **Remote Development Extensions:**
+   - Small aspects of Remote Development are proprietary
+   - Remote SSH, Remote Containers, etc.
+
+4. **Telemetry Services:**
+   - Data collection infrastructure is proprietary
+
+### Impact on Forks (2025 Situation)
+
+**Microsoft Marketplace Blocking:**
+- Microsoft stopped "turning a blind eye" to forks using their extensions
+- Started blocking installation of Microsoft extensions in forks
+- Cursor had to scramble to implement open-source alternatives
+
+**VSCodium Approach:**
+- Community-driven MIT-licensed binary distribution
+- Telemetry disabled by default
+- Cannot connect to VS Marketplace (uses Open VSX)
+- Demonstrates the ecosystem fracture problem
+
+### What Forks CAN Use
+- Full editor core (TypeScript/Electron)
+- Language Server Protocol infrastructure
+- Extension host architecture
+- Basic extension API
+- Open VSX marketplace extensions
+- Any MIT-licensed components in Code - OSS repo
+
+Sources:
+- https://code.visualstudio.com/license
+- https://code.visualstudio.com/docs/supporting/FAQ
+- https://vscodium.com/
+- https://github.com/microsoft/vscode
+- https://ghuntley.com/fracture/
+
+================================================================================
+
+## 5. LICENSING CONSIDERATIONS
+
+### MIT License (Code - OSS)
+The MIT license is highly permissive:
+- Commercial use allowed
+- Modification allowed
+- Distribution allowed
+- Private use allowed
+- Only requirement: Include copyright notice and license
+
+### What MIT Allows for Forks
+- Full commercial products (Cursor, Windsurf)
+- Proprietary additions on top of MIT base
+- No requirement to open-source modifications
+- Can charge for the product
+
+### What MIT Does NOT Cover
+- Microsoft's proprietary Visual Studio Code license
+- Microsoft Marketplace extensions
+- Microsoft branding/trademarks
+- Telemetry infrastructure
+
+### Commercial Viability Proof
+- Cursor: $300M ARR, $29B valuation
+- Windsurf: Acquired by OpenAI for $3B (May 2025)
+- Both built commercial products on MIT-licensed fork
+
+### Key Legal Considerations for New Forks
+
+1. **Branding:**
+   - Cannot use "Visual Studio Code" name
+   - Cannot use Microsoft's VS Code icons
+   - Must create distinct identity
+
+2. **Marketplace:**
+   - Must use Open VSX or build own marketplace
+   - Cannot distribute Microsoft marketplace extensions
+   - May need to build open-source alternatives for popular extensions
+
+3. **Attribution:**
+   - Must include MIT license notice
+   - Should acknowledge VS Code/Microsoft origin
+
+4. **Telemetry:**
+   - If removing telemetry, this is allowed
+   - If adding own telemetry, must be transparent
+
+### Post-Open-Source-AI-Editor Landscape
+After Microsoft's May 2025 announcement open-sourcing Copilot Chat and inline suggestions:
+- Forks can now build on official AI infrastructure
+- Reduces need to reimplement AI features from scratch
+- Levels playing field somewhat between Microsoft and competitors
+- OpenAI's $3B Windsurf acquisition questioned (could have used new open-source framework)
+
+Sources:
+- https://github.com/microsoft/vscode/blob/main/LICENSE.txt
+- https://learn.microsoft.com/en-us/answers/questions/5604074/confirmation-regarding-commercial-use-of-visual-st
+- https://techstartups.com/2025/05/20/did-openai-just-waste-3-billion-on-windsurf-or-could-it-have-built-the-same-on-vs-codes-new-open-source-ai-framework/
+- https://zerotomoon.substack.com/p/how-forking-vs-code-got-windsurf
+
+================================================================================
+
+## 6. OTHER NOTABLE FORKS & COMPETITORS
+
+### Windsurf (formerly Codeium)
+- Founded as Exafunction (GPU virtualization, autonomous vehicles background)
+- Started as free Copilot alternative with autocomplete
+- November 2024: Launched Windsurf as full agentic IDE
+- April 2025: Full rebrand from Codeium to Windsurf
+- May 2025: Acquired by OpenAI for $3B
+- 800,000 DAU, 1,000 enterprise customers (Amazon, Meta, Uber), $40M ARR
+- Key feature: Cascade for agentic code editing
+
+### Open Source Alternatives
+
+**Tabby:**
+- Self-hosted Copilot alternative
+- Can fine-tune locally with decent GPU (RTX 3080+)
+- Code never leaves machine
+
+**FauxPilot:**
+- Self-hosted clone of Copilot's API
+- Complete privacy - no external data transmission
+
+**Continue:**
+- Open-source, model-agnostic extension
+- Connect VS Code to various LLMs including Hugging Face
+- Not tied to single provider
+
+### Microsoft's Response
+- Sponsoring 9 open-source MCP projects
+- Promoting open standards (MCP)
+- Open-sourcing AI editor components
+- Trying to keep ecosystem within VS Code umbrella vs. fragmentation
+
+Sources:
+- https://zerotomoon.substack.com/p/how-forking-vs-code-got-windsurf
+- https://adam.holter.com/openai-expands-its-empire-the-windsurf-acquisition-and-the-quest-to-dominate-the-developer-stack/
+- https://opensource.microsoft.com/blog/2025/10/16/9-open-source-projects-the-github-copilot-and-visual-studio-code-teams-are-sponsoring-and-why-they-matter
+- https://bito.ai/blog/free-github-copilot-alternatives-for-vs-code/
+
+================================================================================
+
+## KEY TAKEAWAYS FOR JADE IDE
+
+1. **Fork vs Extension Decision:**
+   - Fork if you need deep integration (shadow workspace, terminal interception)
+   - Extension if standard API sufficient for use case
+   - Microsoft's open-sourcing of AI components may reduce need to fork
+
+2. **Critical Technical Components to Implement:**
+   - Shadow workspace for AI validation
+   - Native diff rendering for inline suggestions
+   - Terminal interception for error fixing
+   - Embedding-based codebase indexing
+
+3. **Marketplace Strategy Required:**
+   - Cannot use VS Marketplace
+   - Options: Open VSX, custom marketplace, or build open-source alternatives
+   - Plan for blocked Microsoft extensions
+
+4. **Spec-Driven Approach (Kiro model):**
+   - requirements.md, design.md, tasks.md structure
+   - Agent hooks for automated checks
+   - Steering files for project context
+   - May differentiate from Cursor/Windsurf
+
+5. **Licensing is Clear:**
+   - MIT base allows full commercial use
+   - Must avoid Microsoft proprietary components
+   - Create distinct branding
+
+6. **Market Validation:**
+   - Cursor: $300M ARR, $29B valuation
+   - Windsurf: $3B acquisition
+   - Proves VS Code fork + AI = massive opportunity
+
+================================================================================
+
+================================================================================
+[AGENT: UBUNTU-26.04] Web Research Results
+Timestamp: 2026-01-23T12:00:00Z
+================================================================================
+
+## 1. UBUNTU 26.04 LTS "RESOLUTE RACCOON" OVERVIEW
+
+### Release Information
+- **Official Release Date**: April 23, 2026
+- **Codename**: Resolute Raccoon
+- **Support Lifecycle**: 5 years standard (until April 2031), up to 12 years with Ubuntu Pro
+- **Beta**: March 26, 2026
+- **First Point Release (26.04.1)**: August 6, 2026
+
+### Key Features
+- **GNOME 50** desktop environment
+- **Wayland** as default graphics protocol (near-total commitment)
+- **x86-64-v3 (amd64v3)** package variants for newer CPUs (performance optimizations)
+- **Memory-safe Rust-based core utilities**
+- **TPM-backed encryption and Intel TDX confidential computing**
+- **AMD ROCm** directly from Ubuntu repositories (`sudo apt install rocm`)
+- **Snap prompting client** graduating from experimental status
+
+Sources:
+- https://itsfoss.com/ubuntu-26-04-release-features/
+- https://www.omgubuntu.co.uk/2025/11/ubuntu-26-04-release-schedule
+- https://linuxconfig.org/ubuntu-26-04-release-date-and-new-features-in-resolute-raccoon
+
+--------------------------------------------------------------------------------
+
+## 2. WSL2 CONFIGURATION FOR HIGH-END HARDWARE (128GB RAM, 11GB VRAM, 24 Threads)
+
+### .wslconfig File Location
+`C:\Users\<YourUsername>\.wslconfig`
+
+### Optimal Configuration for 128GB RAM System
+```ini
+[wsl2]
+# Memory allocation (50% rule: leave 50% for Windows)
+memory=64GB
+
+# Processor allocation (24 threads available)
+processors=24
+
+# Swap configuration for LLM workloads
+swap=32GB
+swapfile=D:\\WSL\\wsl-swap.vhdx
+
+# Localhost forwarding for development servers
+localhostForwarding=true
+
+# Nested virtualization (for Docker)
+nestedVirtualization=true
+
+# GUI applications support
+guiApplications=true
+
+# Custom kernel (optional - for advanced users)
+# kernel=C:\\WSL\\custom-kernel
+
+# Page reporting for memory reclamation
+pageReporting=true
+```
+
+### Applying Configuration Changes
+```powershell
+wsl --shutdown
+wsl
+```
+
+### Important Notes
+- WSL2 memory allocation is **dynamic** - it requests memory as needed
+- Default behavior: 50% of host RAM or 8GB (whichever is smaller)
+- For LLM workloads, **allocate more RAM** (64GB+ recommended for large models)
+- **Do NOT install NVIDIA GPU drivers inside WSL2** - use Windows host driver
+
+### Performance Settings
+- For NVIDIA NIM deployments: Set `NIM_RELAX_MEM_CONSTRAINTS=1`
+- WSL2 now open-sourced (Build 2025) with Model Context Protocol support
+- 35% faster token generation with llama.cpp/Ollama optimizations (CES 2026)
+
+Sources:
+- https://learn.microsoft.com/en-us/windows/wsl/wsl-config
+- https://fizzylogic.nl/2023/01/05/how-to-configure-memory-limits-in-wsl2
+- https://developer.nvidia.com/blog/leveling-up-cuda-performance-on-wsl2-with-new-enhancements/
+
+--------------------------------------------------------------------------------
+
+## 3. MODERN PACKAGE MANAGERS
+
+### 3.1 mise (formerly rtx) - Polyglot Version Manager
+
+#### Installation
+```bash
+curl https://mise.run | sh
+```
+
+#### Shell Activation
+```bash
+# Bash
+echo 'eval "$(~/.local/bin/mise activate bash)"' >> ~/.bashrc
+
+# Zsh
+echo 'eval "$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
+
+# Fish
+echo '~/.local/bin/mise activate fish | source' >> ~/.config/fish/config.fish
+```
+
+#### Key Features (v2026.1.6)
+- Replaces: asdf, nvm, pyenv, rbenv, volta, and more
+- Uses pre-compiled binaries (faster than compiling from source)
+- Single tool for version management + environment variables + task running
+- Breaking changes expected to be "exceedingly rare" from 2025 onwards
+
+Sources:
+- https://mise.jdx.dev/
+- https://github.com/jdx/mise
+- https://betterstack.com/community/guides/scaling-nodejs/mise-explained/
+
+--------------------------------------------------------------------------------
+
+### 3.2 uv (Astral) - Ultra-Fast Python Package Manager
+
+#### Installation Methods
+```bash
+# Official installer (recommended)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Via Snap
+sudo snap install astral-uv --classic
+
+# Via pip (if already have Python)
+pip install uv
+```
+
+#### Key Features (v0.9.26 - Jan 2026)
+- **10-100x faster** than pip/pip-tools
+- Written in Rust (same team as Ruff linter)
+- Replaces: pip, pip-tools, pipx, poetry, pyenv, twine, virtualenv
+- Universal lockfile support
+- Inline dependency metadata for scripts
+- Automatic Python version management
+
+#### Common Commands
+```bash
+# Create project with venv
+uv init myproject
+cd myproject
+uv venv
+source .venv/bin/activate
+
+# Install dependencies
+uv pip install numpy pandas
+
+# Sync from requirements
+uv pip sync requirements.txt
+```
+
+Sources:
+- https://docs.astral.sh/uv/
+- https://github.com/astral-sh/uv
+- https://www.datacamp.com/tutorial/python-uv
+
+--------------------------------------------------------------------------------
+
+### 3.3 pnpm - Fast Node.js Package Manager
+
+#### Installation Methods
+```bash
+# Via Corepack (Node.js 16.13+, recommended)
+sudo corepack enable
+corepack prepare pnpm@latest --activate
+
+# Via curl
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+# Via npm
+sudo npm install -g pnpm
+```
+
+#### PATH Configuration
+```bash
+export PNPM_HOME="$HOME/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+```
+
+#### Key Benefits
+- **2x faster** than npm and Yarn classic
+- Content-addressable storage (saves disk space)
+- Strict dependency isolation
+- Excellent monorepo support with workspaces
+
+Sources:
+- https://pnpm.io/installation
+- https://www.dropvps.com/blog/install-pnpm-on-ubuntu-2510/
+
+--------------------------------------------------------------------------------
+
+## 4. OLLAMA SETUP WITH GPU PASSTHROUGH
+
+### Prerequisites
+1. **Windows NVIDIA GPU driver** installed (CUDA available automatically in WSL2)
+2. **DO NOT install Linux NVIDIA drivers inside WSL2**
+
+### Installation in WSL2
+```bash
+# Direct installation (systemd must be enabled)
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Enable systemd in WSL2 (if not already)
+# Add to /etc/wsl.conf:
+# [boot]
+# systemd=true
+```
+
+### Docker with GPU Support
+```bash
+# Install nvidia-container-toolkit first
+sudo apt-get install -y nvidia-container-toolkit
+
+# Run Ollama with GPU
+docker run --restart always -d \
+  --name ollama-gpu \
+  --gpus=all \
+  -v ~/container-data/ollama:/root/.ollama \
+  -p 11434:11434 \
+  ollama/ollama
+```
+
+### Verify GPU Access
+```bash
+# Test CUDA in Docker
+docker run --rm -it --gpus=all nvcr.io/nvidia/k8s/cuda-sample:nbody nbody -gpu -benchmark
+
+# Check Ollama GPU detection
+ollama run llama3.2:3b --verbose
+```
+
+### Environment Variables for 11GB VRAM GPU
+```bash
+# Reserve ~10-15% VRAM for stability (1.1-1.65GB)
+export OLLAMA_GPU_OVERHEAD=1200000000  # ~1.2GB
+
+# Enable Flash Attention 2.0 (30% memory reduction on Ampere+)
+export OLLAMA_FLASH_ATTENTION=1
+
+# KV Cache quantization (use q8_0 for balance, q4_0 for max savings)
+export OLLAMA_KV_CACHE_TYPE=q8_0
+
+# Max concurrent models (auto by default)
+export OLLAMA_MAX_LOADED_MODELS=1
+
+# Keep model in memory duration
+export OLLAMA_KEEP_ALIVE=30m
+
+# Number of parallel requests
+export OLLAMA_NUM_PARALLEL=2
+```
+
+### Model Recommendations for 11GB VRAM
+| Model | Quantization | VRAM Usage | Notes |
+|-------|--------------|------------|-------|
+| Llama 3.2 3B | Q4_K_M | ~3GB | Fast, efficient |
+| Llama 3.1 8B | Q4_K_M | ~6-7GB | Best balance |
+| Mistral 7B | Q4_K_M | ~5-6GB | Good reasoning |
+| Qwen 2.5 7B | Q4_K_M | ~5-6GB | Multilingual |
+| DeepSeek-R1 7B | Q4_K_M | ~5-6GB | Reasoning focus |
+
+### KV Cache Considerations
+- Default FP16: 8B model @ 32K context ≈ 4.5GB KV cache
+- With Q8_0 quantization: ~50% reduction
+- With Q4_0 quantization: ~75% reduction (some quality loss)
+
+Sources:
+- https://docs.nvidia.com/cuda/wsl-user-guide/index.html
+- https://localllm.in/blog/ollama-vram-requirements-for-local-llms
+- https://deepwiki.com/ollama/ollama/5.4-memory-management-and-gpu-allocation
+- https://www.blackmoreops.com/wsl-ai-development-setup-guide/
+
+--------------------------------------------------------------------------------
+
+## 5. CLAUDE CODE CLI OPTIMIZATION
+
+### Installation (2025-2026)
+```bash
+# npm installation is deprecated
+# Use native installer or package manager
+
+# Via mise (recommended for version management)
+mise install claude-code@latest
+mise use -g claude-code@latest
+```
+
+### System Requirements
+- macOS 10.15+, Ubuntu 20.04+, or Windows 10+ (WSL/native)
+- 4GB+ RAM minimum
+- Node.js 18+ LTS
+- Stable internet connection
+- Bash or Zsh shells (most stable experience)
+
+### Configuration Files
+
+#### User Settings (~/.claude/settings.json)
+```json
+{
+  "model": "claude-sonnet-4-20250514",
+  "theme": "dark",
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Read(**/*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./secrets/**)"
+    ]
+  },
+  "maxParallelTools": 4,
+  "terminalRows": 50
+}
+```
+
+#### Project Settings (.claude/settings.json)
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(pytest *)",
+      "Bash(uv pip *)",
+      "Write(src/**/*.py)"
+    ]
+  },
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    }
+  }
+}
+```
+
+### CLAUDE.md Best Practices
+
+#### Structure
+```markdown
+# Project Name
+
+## Quick Facts
+- Stack: Python 3.12, FastAPI, PostgreSQL
+- Test: `pytest tests/ -v`
+- Lint: `ruff check . --fix`
+- Format: `ruff format .`
+
+## Key Directories
+- `src/` - Main application code
+- `tests/` - Test suite
+- `docs/` - Documentation
+
+## Code Style
+- Use type hints for all functions
+- Docstrings for public APIs
+- Max line length: 88 characters
+```
+
+#### Best Practices
+1. Start simple, expand based on friction points
+2. Use `/init` command to generate initial CLAUDE.md
+3. Document commands you type repeatedly
+4. Capture architectural context
+5. Keep under 500 lines (reference detailed docs separately)
+
+### Performance Optimizations
+- **Model Switching**: Use Haiku for fast/cheap tasks, Opus for complex reasoning
+- **MCP Integration**: 8M+ downloads by April 2025 (80x growth in 5 months)
+- **Plugin Marketplace**: 36 curated plugins (December 2025 launch)
+- **Git Worktrees**: Run multiple Claude sessions on different branches
+
+### Custom Commands (.claude/commands/)
+```markdown
+<!-- .claude/commands/test-fix.md -->
+# Test and Fix
+
+Run the test suite and fix any failures:
+1. Run `pytest tests/ -v`
+2. If failures, analyze and propose fixes
+3. Apply fixes and re-run tests
+4. Repeat until all tests pass
+```
+
+Sources:
+- https://code.claude.com/docs/en/settings
+- https://shipyard.build/blog/claude-code-cheat-sheet/
+- https://www.anthropic.com/engineering/claude-code-best-practices
+- https://claude.com/blog/using-claude-md-files
+
+--------------------------------------------------------------------------------
+
+## 6. PERFORMANCE TUNING FOR LLM WORKLOADS
+
+### Kernel Parameters (sysctl.conf)
+```bash
+# /etc/sysctl.d/99-llm-performance.conf
+
+# Increase max memory map areas (for large models)
+vm.max_map_count=2000000
+
+# Reduce swappiness (prefer RAM over swap for LLMs)
+vm.swappiness=10
+
+# Increase dirty ratio for large file writes
+vm.dirty_ratio=40
+vm.dirty_background_ratio=10
+
+# Network optimizations for API calls
+net.core.rmem_max=16777216
+net.core.wmem_max=16777216
+net.ipv4.tcp_rmem=4096 87380 16777216
+net.ipv4.tcp_wmem=4096 65536 16777216
+
+# Apply changes
+sudo sysctl -p /etc/sysctl.d/99-llm-performance.conf
+```
+
+### Memory Management
+```bash
+# Disable transparent huge pages (can cause latency spikes)
+echo never | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
+echo never | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
+
+# Set CPU governor to performance (for consistent throughput)
+echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+
+# Configure NUMA (if applicable)
+# Bind LLM process to specific NUMA node
+numactl --cpunodebind=0 --membind=0 ollama serve
+```
+
+### NVIDIA GPU Optimizations
+```bash
+# Set persistence mode (reduces startup latency)
+sudo nvidia-smi -pm 1
+
+# Lock GPU clocks for consistent performance
+sudo nvidia-smi -lgc 1500,1500
+
+# Enable MIG (Multi-Instance GPU) if supported
+# Useful for running multiple smaller models
+sudo nvidia-smi -mig 1
+
+# Monitor GPU utilization
+watch -n 1 nvidia-smi
+```
+
+### Docker Optimizations
+```bash
+# Increase shared memory for large models
+docker run --shm-size=8g --gpus=all ...
+
+# Use host network for lower latency
+docker run --network=host --gpus=all ...
+
+# Pin container to specific CPUs
+docker run --cpuset-cpus="0-11" --gpus=all ...
+```
+
+### WSL2-Specific Tuning
+```ini
+# .wslconfig additions for LLM workloads
+[wsl2]
+# Increase default timeout for GPU operations
+kernelCommandLine=nvidia.NVreg_EnablePCIeGen3=1
+
+# Experimental: Faster file system
+[experimental]
+sparseVhd=true
+autoMemoryReclaim=gradual
+```
+
+### Ollama Modelfile Optimizations
+```dockerfile
+# Create optimized Modelfile
+FROM llama3.1:8b-instruct-q4_K_M
+
+# Reduce context for faster inference
+PARAMETER num_ctx 4096
+
+# Increase batch size for throughput
+PARAMETER num_batch 512
+
+# Enable mmap for faster loading
+PARAMETER mmap true
+
+# Use all available threads
+PARAMETER num_thread 24
+
+# GPU layers (adjust based on VRAM)
+PARAMETER num_gpu 35
+```
+
+Sources:
+- https://developer.nvidia.com/blog/open-source-ai-tool-upgrades-speed-up-llm-and-diffusion-models-on-nvidia-rtx-pcs
+- https://www.mslinn.com/llm/4000-llm-wsl.html
+- https://deepwiki.com/jameschrisa/Ollama_Tuning_Guide/3.2-gpu-optimization
+
+--------------------------------------------------------------------------------
+
+## 7. COMPLETE BOOTSTRAP SEQUENCE
+
+### Step 1: WSL2 Setup (Windows Side)
+```powershell
+# Install WSL2 with Ubuntu 26.04 (when available)
+wsl --install -d Ubuntu-26.04
+
+# Create .wslconfig
+notepad $env:USERPROFILE\.wslconfig
+```
+
+### Step 2: Base System (WSL2 Side)
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Essential tools
+sudo apt install -y build-essential git curl wget unzip \
+  libssl-dev libffi-dev python3-dev
+
+# Enable systemd (for Ollama service)
+sudo tee /etc/wsl.conf << 'EOF'
+[boot]
+systemd=true
+[interop]
+appendWindowsPath=false
+EOF
+```
+
+### Step 3: Install Package Managers
+```bash
+# mise (version manager)
+curl https://mise.run | sh
+echo 'eval "$(~/.local/bin/mise activate bash)"' >> ~/.bashrc
+source ~/.bashrc
+
+# uv (Python)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# pnpm (Node.js)
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+### Step 4: Install Runtimes via mise
+```bash
+mise install python@3.12 node@22 go@1.23
+mise use -g python@3.12 node@22 go@1.23
+```
+
+### Step 5: Install Ollama
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Configure environment
+cat >> ~/.bashrc << 'EOF'
+export OLLAMA_GPU_OVERHEAD=1200000000
+export OLLAMA_FLASH_ATTENTION=1
+export OLLAMA_KV_CACHE_TYPE=q8_0
+export OLLAMA_KEEP_ALIVE=30m
+EOF
+
+# Pull models
+ollama pull llama3.1:8b-instruct-q4_K_M
+ollama pull qwen2.5:7b-instruct-q4_K_M
+```
+
+### Step 6: Install Claude Code
+```bash
+mise install claude-code@latest
+mise use -g claude-code@latest
+
+# Create global CLAUDE.md
+mkdir -p ~/.claude
+cat > ~/.claude/CLAUDE.md << 'EOF'
+# Global Claude Configuration
+
+## Environment
+- OS: Ubuntu 26.04 LTS on WSL2
+- Python: 3.12 (via mise + uv)
+- Node.js: 22 (via mise + pnpm)
+- Local LLM: Ollama with GPU
+
+## Preferences
+- Use uv for Python package management
+- Use pnpm for Node.js package management
+- Prefer type hints in Python code
+- Use conventional commits
+EOF
+```
+
+### Step 7: Verify Installation
+```bash
+# Check versions
+mise --version
+uv --version
+pnpm --version
+ollama --version
+claude --version
+
+# Check GPU access
+nvidia-smi
+ollama run llama3.2:3b "Hello, world!" --verbose
+```
+
+================================================================================
+END OF RESEARCH RESULTS
+================================================================================
+
+================================================================================
+[AGENT: DOTFILES] Web Research Results
+Timestamp: 2026-01-23T05:45:00Z
+================================================================================
+
+## Executive Summary
+
+This research covers modern dotfiles management with chezmoi and alternatives,
+focusing on enterprise environments, multi-tier configuration, secret management,
+and organizational patterns. Sources are from 2025-2026 publications.
+
+--------------------------------------------------------------------------------
+## 1. CHEZMOI BEST PRACTICES FOR ENTERPRISE ENVIRONMENTS
+--------------------------------------------------------------------------------
+
+### Current Version: 2.69.3 (as of January 2026)
+
+### Core Best Practices
+
+**Security First**
+- NEVER push secrets (API keys, credentials) to any repository in plain text
+- Use encryption (age/gpg) or password manager integration for sensitive data
+- Configure `[add] secrets = "error"` to prevent accidental secret commits
+- Use 1Password integration only on "personal computers which are stringently locked down"
+
+**Testable Dotfiles (2025 Pattern)**
+- Combine chezmoi with test-driven development using Bats for unit testing
+- Use GitHub Actions for continuous verification
+- Run regular end-to-end setup tests to catch regressions
+- Source: https://shunk031.me/post/testable-dotfiles-management-with-chezmoi/
+
+**Low-Friction Configuration (Recommended Settings)**
+```toml
+encryption = "gpg"  # or "age"
+[add]
+secrets = "error"
+[edit]
+apply = true
+[git]
+autoCommit = true
+autoPush = true
+```
+
+**Remote Machine Setup**
+- Keep dotfiles public for instant environment setup on new machines
+- Write wrapper scripts for SSH-based remote machine bootstrapping
+- Useful for VPS setup and headless home servers
+- Source: https://blog.cmmx.de/2026/01/13/taking-control-of-my-dotfiles-with-chezmoi/
+
+### Enterprise Design Philosophy
+
+**Important Limitation**: chezmoi explicitly states it is "deliberately not a corporate 
+system management tool." For fleet management, use Ansible, Chef, Puppet, or Salt instead.
+
+However, chezmoi works well for:
+- Individual developer environment standardization
+- Personal configuration across multiple work/home machines
+- Integration with enterprise secret management systems
+
+Source: https://www.chezmoi.io/user-guide/frequently-asked-questions/design/
+
+--------------------------------------------------------------------------------
+## 2. MULTI-TIER CONFIGURATION: PERSONAL, PROJECT, ORG-WIDE
+--------------------------------------------------------------------------------
+
+### Configuration Hierarchy
+
+Chezmoi merges configuration from multiple sources in order:
+1. `~/.config/chezmoi/chezmoi.toml` (global user settings)
+2. `.chezmoidata.$FORMAT` files (JSON, JSONC, TOML, YAML)
+3. Templates with machine-specific logic
+4. External dependencies via `.chezmoiexternal.toml`
+
+### Personal Tier (~/.claude equivalent)
+```toml
+# ~/.config/chezmoi/chezmoi.toml
+[data]
+email = "personal@example.com"
+tier = "personal"
+
+[data.personal]
+editor = "nvim"
+theme = "dark"
+```
+
+### Project Tier (.claude equivalent)
+Use `.chezmoidata.yaml` in project directories:
+```yaml
+project:
+  name: "my-project"
+  tier: "project"
+  settings:
+    linter: "eslint"
+    formatter: "prettier"
+```
+
+### Organization-Wide Templates
+Store shared templates in `.chezmoitemplates/`:
+```
+.chezmoitemplates/
+├── org/
+│   ├── git-config       # Org-wide git settings
+│   ├── editor-config    # Standard editor configuration
+│   └── shell-aliases    # Company-approved aliases
+└── shared/
+    └── security-config  # Security baseline
+```
+
+Use in templates:
+```
+{{ template "org/git-config" . }}
+```
+
+### Multi-Repo Workaround Pattern
+
+Since chezmoi doesn't natively support multiple repos, use layered approach:
+```bash
+# Layer 1: Company base configuration
+chezmoi apply -S ~/dotfiles-company
+
+# Layer 2: Department-specific overrides
+chezmoi apply -S ~/dotfiles-department
+
+# Layer 3: Personal customizations
+chezmoi apply -S ~/dotfiles-personal
+```
+
+Source: https://github.com/twpayne/chezmoi/issues/1169
+
+### Branch-Based Separation
+
+Use orphan branches for completely different machine configurations:
+```bash
+chezmoi init --branch=work
+chezmoi init --branch=personal
+```
+
+Source: https://www.chezmoi.io/user-guide/setup/
+
+--------------------------------------------------------------------------------
+## 3. SECRET MANAGEMENT INTEGRATION
+--------------------------------------------------------------------------------
+
+### 1Password Integration
+
+**Basic Setup**
+```toml
+# ~/.config/chezmoi/chezmoi.toml
+[onepassword]
+mode = "cli"  # or "connect" for enterprise
+```
+
+**Template Usage**
+```
+{{ onepassword "item-name" "vault-name" }}
+{{ onepasswordRead "op://vault/item/field" }}
+```
+
+**1Password Connect (Enterprise)**
+```bash
+export OP_CONNECT_HOST="https://connect.company.com"
+export OP_CONNECT_TOKEN="token"
+```
+
+**Service Accounts**
+Set `onepassword.mode` to `connect` and configure OP_SERVICE_ACCOUNT_TOKEN
+for automated pipelines.
+
+Source: https://www.chezmoi.io/user-guide/password-managers/1password/
+
+### Age Encryption
+
+**Built-in Support**
+Chezmoi has built-in age encryption (no external binary required).
+
+**Limitations of Built-in Age**
+- No passphrase support
+- No symmetric encryption
+- No SSH key support
+
+**Setup**
+```bash
+# Generate age key
+age-keygen -o ~/.config/chezmoi/key.txt
+
+# Configure chezmoi
+[encryption]
+command = "age"
+
+[age]
+identity = "~/.config/chezmoi/key.txt"
+recipient = "age1..."
+```
+
+**Storing Age Keys in 1Password (Recommended Pattern)**
+```bash
+# Store private key as secure note
+op item create --category="Secure Note" --title="AGE Key" \
+  "private_key=$(cat ~/.config/age/key.txt)"
+
+# Retrieve on new machine
+op read "op://Private/AGE Key/private_key" > ~/.config/age/key.txt
+```
+
+Source: https://www.chezmoi.io/user-guide/encryption/age/
+
+### GPG Encryption
+
+**Wrapper Script Pattern (1Password + GPG)**
+Create a wrapper script that retrieves passphrase from 1Password:
+```bash
+#!/bin/bash
+# ~/.local/bin/gpg-chezmoi
+passphrase=$(op read "op://vault/gpg-passphrase/password")
+echo "$passphrase" | gpg --batch --passphrase-fd 0 "$@"
+```
+
+Configure chezmoi:
+```toml
+[encryption]
+command = "~/.local/bin/gpg-chezmoi"
+```
+
+Source: https://github.com/twpayne/chezmoi/discussions/4543
+
+--------------------------------------------------------------------------------
+## 4. GITHUB ORGANIZATION DOTFILES REPOSITORY PATTERNS
+--------------------------------------------------------------------------------
+
+### Enterprise Team Management (2025-2026 Updates)
+
+**Enterprise Teams**
+- Managed at enterprise level
+- Can span multiple organizations
+- Support up to 2,500 teams per enterprise
+- Up to 5,000 users per team
+- Each team assignable to max 1,000 organizations
+
+**Enterprise Security Manager (ESM) Role**
+- Centrally access/manage security alerts across all orgs
+- Granular bypass permissions for repository rulesets
+- Available for GitHub Code Security, Secret Protection, Advanced Security
+
+Source: https://github.blog/changelog/2025-10-23-managing-roles-and-governance-via-enterprise-teams-is-in-public-preview/
+
+### Repository Pattern: Topic-Centric (holman/dotfiles)
+
+Structure dotfiles by topic/application:
+```
+dotfiles/
+├── git/
+│   ├── gitconfig.symlink
+│   └── gitignore.symlink
+├── zsh/
+│   ├── zshrc.symlink
+│   ├── aliases.zsh      # Auto-loaded
+│   └── completion.zsh   # Auto-loaded
+├── vim/
+│   └── vimrc.symlink
+└── bin/
+    └── scripts
+```
+
+Any `.zsh` file gets auto-included in shell configuration.
+
+Source: https://github.com/holman/dotfiles
+
+### Organization-Wide Dotfiles Pattern
+
+**Recommended Structure**
+```
+org-dotfiles/
+├── base/               # Required for all employees
+│   ├── git-config
+│   ├── security
+│   └── approved-tools
+├── roles/              # Role-specific configs
+│   ├── developer/
+│   ├── sre/
+│   └── data-science/
+├── templates/          # Chezmoi templates
+└── scripts/
+    └── setup.sh        # Bootstrap script
+```
+
+**Best Practice: Minimal Organizations**
+GitHub recommends "as few organizations as possible" for:
+- Innersource search functionality
+- Simplified permission management with nested teams
+- Consistent policy enforcement
+
+Source: https://github.blog/enterprise-software/devops/best-practices-for-organizations-and-teams-using-github-enterprise-cloud/
+
+### External Dependencies Pattern
+
+Use `.chezmoiexternal.toml` for org-maintained dependencies:
+```toml
+[".config/company"]
+type = "git-repo"
+url = "https://github.com/company/base-config.git"
+refreshPeriod = "168h"  # Weekly refresh
+
+[".local/bin/company-cli"]
+type = "file"
+url = "https://releases.company.com/cli/latest"
+executable = true
+```
+
+Source: https://www.chezmoi.io/user-guide/include-files-from-elsewhere/
+
+--------------------------------------------------------------------------------
+## 5. ALTERNATIVES COMPARISON
+--------------------------------------------------------------------------------
+
+### YADM (Yet Another Dotfiles Manager)
+GitHub Stars: ~6,100
+
+**Pros**
+- Git-centric: "If you know git, you know yadm"
+- Works directly in home directory (no source dir)
+- Built-in encryption support
+- Supports alternate files with ##os.Linux / ##os.Darwin syntax
+- No .gitignore clutter
+
+**Cons**
+- External dependencies required for templating (envptl, j2cli - both unmaintained)
+- Fewer advanced features than chezmoi
+- Struggles with identical files in different locations on different OSes
+
+**Best For**: Users familiar with Git who want a simpler, Git-centric solution
+
+Source: https://www.libhunt.com/r/yadm
+
+### Nix Home-Manager
+**Maturity**: Experimental but widely used
+
+**Pros**
+- Declarative configuration using Nix expressions
+- Manages both dotfiles AND program installations
+- Reproducible: "exact same home on different hosts"
+- Clean separation of system config vs user config
+- Works on macOS, Linux, WSL, and NixOS
+- Flakes designed for sharing/reuse
+
+**Cons**
+- Steep learning curve
+- Flakes still marked "experimental"
+- Requires Nix installation
+- Overkill for simple dotfile needs
+
+**Enterprise Use Cases**
+- Reproducible developer environments
+- Complete environment specification in code
+- Integration with nix-darwin for macOS fleet management
+
+**Setup with Flakes**
+```nix
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager";
+  };
+  
+  outputs = { nixpkgs, home-manager, ... }: {
+    homeConfigurations."user" = home-manager.lib.homeManagerConfiguration {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      modules = [ ./home.nix ];
+    };
+  };
+}
+```
+
+Sources: 
+- https://callistaenterprise.se/blogg/teknik/2025/04/10/nix-flakes/
+- https://nix-community.github.io/home-manager/
+
+### Mise (formerly RTX)
+**Current Version**: 2026.1.6 (as of January 2026)
+**Status**: Mature, stable (minimal breaking changes expected)
+
+**Scope**
+- Polyglot version manager (node, python, ruby, etc.)
+- Environment variable management
+- Task runner
+
+**Configuration Hierarchy**
+```
+~/.config/mise.toml              # Global
+~/src/work/mise.toml             # Work directory
+~/src/work/myproj/mise.toml      # Project-specific (overrides above)
+```
+
+**Dotfile Integration**
+Paths can be dotfiles: `.mise.toml` or `.mise/config.toml`
+
+**2025-2026 Direction**
+"Expect far fewer features in 2025 than in 2024... mise has hit a mature stage"
+Focus on refinement, not experimentation.
+
+**Best For**: Version management + env vars + tasks (not pure dotfile management)
+
+Source: https://github.com/jdx/mise/discussions/4057
+
+### GNU Stow
+**Best For**: Simple symlink-based dotfile management
+
+**Pros**
+- Minimal, no dependencies
+- Conceptually simple
+- Been around forever
+
+**Cons**
+- No templating
+- No encryption
+- No machine-specific configuration
+
+### Ansible
+**Best For**: Fleet management, enterprise environments
+
+**Pros**
+- Full system configuration management
+- Idempotent operations
+- Extensive module ecosystem
+- Well-suited for corporate environments
+
+**Cons**
+- Overkill for personal dotfiles
+- Requires Python
+- More complex setup
+
+--------------------------------------------------------------------------------
+## 6. CLAUDE CODE CONFIGURATION PATTERNS (2025-2026)
+--------------------------------------------------------------------------------
+
+### Configuration File Hierarchy
+1. Legacy file (deprecated)
+2. Global user settings
+3. Project-specific settings
+4. Local project overrides
+
+**Warning**: "Confusing hierarchy often leads to settings being unexpectedly overridden"
+
+### Critical MCP Context Management
+"Your 200k context window can shrink to 70k with too many tools enabled"
+Use `disabledMcpServers` in project config to disable unused MCPs.
+
+### Subagents Pattern
+"Specialized Claude instances with their own context windows and personas"
+- Use for domain-specific tasks: code review, debugging, architecture
+- Results in better output and token savings
+
+### Auto-Update Channels (January 2026)
+- `latest`: New features immediately
+- `stable`: ~1 week delay, skips major regressions
+
+Configure via `/config` or settings.json.
+
+Source: https://shipyard.build/blog/claude-code-cheat-sheet/
+
+--------------------------------------------------------------------------------
+## 7. DEVCONTAINER + DOTFILES INTEGRATION
+--------------------------------------------------------------------------------
+
+### Configuration in VS Code
+```json
+{
+  "dotfiles.repository": "github.com/user/dotfiles",
+  "dotfiles.targetPath": "~/dotfiles",
+  "dotfiles.installCommand": "install.sh"
+}
+```
+
+### DevPod Integration
+```bash
+devpod create --dotfiles github.com/user/dotfiles
+```
+
+### Best Practice: Layered Approach
+1. **DevContainers**: Project-consistent, isolated environment
+2. **Dotfiles**: Personal customization within shared container
+
+Source: https://nikiforovall.blog/productivity/devcontainers/2022/08/13/deaac.html
+
+--------------------------------------------------------------------------------
+## 8. RECOMMENDATIONS FOR JADE-IDE
+--------------------------------------------------------------------------------
+
+### Recommended Architecture: Three-Tier Chezmoi
+
+```
+Tier 1: Organization Base (git-repo external)
+├── Security policies
+├── Approved tool configurations
+└── Company-wide aliases
+
+Tier 2: Project Templates (.chezmoitemplates/)
+├── Language-specific configs
+├── Framework settings
+└── IDE configurations
+
+Tier 3: Personal Overrides (user's dotfiles repo)
+├── Editor preferences
+├── Shell customizations
+└── Personal aliases
+```
+
+### Secret Management Strategy
+
+**Production**: 1Password Connect with Service Accounts
+**Development**: Age encryption with keys in 1Password
+**CI/CD**: GitHub Secrets + 1Password integration
+
+### Key Takeaways
+
+1. **Chezmoi is the leader** for individual dotfile management with templates
+2. **Multi-repo is possible** but requires layered apply approach
+3. **Nix Home-Manager** for complete reproducible environments (higher learning curve)
+4. **Mise** for version management, not dotfiles (complementary tool)
+5. **1Password + Age** is the recommended secret management stack
+6. **Test your dotfiles** with Bats + GitHub Actions
+7. **For enterprise fleet management**, use Ansible/Chef/Puppet instead
+
+================================================================================
+## Sources
+
+### Chezmoi
+- https://www.chezmoi.io/
+- https://natelandau.com/managing-dotfiles-with-chezmoi/
+- https://shunk031.me/post/testable-dotfiles-management-with-chezmoi/
+- https://blog.cmmx.de/2026/01/13/taking-control-of-my-dotfiles-with-chezmoi/
+- https://marcusb.org/posts/2025/01/frictionless-dotfile-management-with-chezmoi/
+
+### Secret Management
+- https://www.chezmoi.io/user-guide/encryption/age/
+- https://www.chezmoi.io/user-guide/password-managers/1password/
+- https://paulocurado.com/blog/managing-secrets-with-sops-age-and-1password/
+
+### Alternatives
+- https://biggo.com/news/202412191324_dotfile-management-tools-comparison
+- https://callistaenterprise.se/blogg/teknik/2025/04/10/nix-flakes/
+- https://mise.jdx.dev/configuration.html
+- https://github.com/jdx/mise/discussions/4057
+
+### GitHub Enterprise
+- https://github.blog/changelog/2025-10-23-managing-roles-and-governance-via-enterprise-teams-is-in-public-preview/
+- https://github.blog/enterprise-software/devops/best-practices-for-organizations-and-teams-using-github-enterprise-cloud/
+- https://github.com/holman/dotfiles
+
+### Claude Code
+- https://shipyard.build/blog/claude-code-cheat-sheet/
+- https://www.eesel.ai/blog/claude-code-configuration
+
+### DevContainers
+- https://nikiforovall.blog/productivity/devcontainers/2022/08/13/deaac.html
+- https://www.daytona.io/dotfiles/ultimate-guide-to-dev-containers
+================================================================================
