@@ -1,0 +1,28 @@
+{
+  "_entity_id": "config-tsconfig",
+  "_entity_name": "TypeScript Configuration",
+  "_entity_type_id": "config",
+  "_entity_path": "entity_cli/tsconfig.json",
+  "_entity_language": "json",
+  "_entity_state": "active",
+  "_entity_created": "2026-01-22T16:00:00Z",
+
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

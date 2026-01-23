@@ -1,8 +1,77 @@
-# Editor
+# ---
+# entity_id: config-gitignore
+# entity_name: Git Ignore Configuration
+# entity_type_id: config
+# entity_path: .gitignore
+# entity_language: gitignore
+# entity_state: active
+# entity_created: 2026-01-22T16:00:00Z
+# ---
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.idea/
 .vscode/
 *.swp
 *.swo
 *~
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+entity_cli/dist/
+
+# Entity Store Cache
+.entity-cache/
+.entity-index.json
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
 
 # OS
 .DS_Store
@@ -10,13 +79,20 @@ Thumbs.db
 
 # Logs (keep edit-log for debugging)
 *.log
+logs/
 !.claude/edit-log.txt
 
 # Local overrides
 .claude/settings.local.json
 CLAUDE.local.md
 
-# Secrets
+# Secrets (never commit these)
 .env
 .env.*
+.env.local
+.env.*.local
 !.env.example
+*.pem
+*.key
+credentials.json
+secrets.json

@@ -1,0 +1,115 @@
+# ---
+# entity_id: module-python-parser
+# entity_name: Python AST Parser
+# entity_type_id: module
+# entity_path: entity_store/parsers/python_parser.py
+# entity_language: python
+# entity_state: active
+# entity_created: 2026-01-22T16:00:00Z
+# entity_exports: [PythonParser, PythonEntityExtractor]
+# entity_dependencies: [models]
+# ---
+
+"""
+Python AST parser for entity extraction.
+
+Uses Python's built-in ast module to extract:
+- Classes (with docstrings)
+- Methods (instance, class, static)
+- Functions (module-level)
+- Parameters (with type hints)
+"""
+
+import ast
+from pathlib import Path
+from typing import Optional
+
+from entity_store.models import Entity, EntityType
+
+
+class PythonEntityExtractor(ast.NodeVisitor):
+    """
+    AST visitor that extracts entities from Python source.
+
+    Traverses the AST and creates Entity objects for each
+    class, method, function, and parameter definition.
+    """
+
+    def __init__(self, filepath: str, source: str) -> None:
+        """
+        Initialize extractor.
+
+        Args:
+            filepath: Path to the source file
+            source: Source code content
+        """
+        self.filepath = filepath
+        self.source = source
+        self.entities: list[Entity] = []
+        self.parent_stack: list[Entity] = []
+
+    def extract(self) -> list[Entity]:
+        """
+        Parse source and extract all entities.
+
+        Returns:
+            List of extracted Entity objects
+        """
+        raise NotImplementedError("extract not yet implemented")
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        """Extract entity from class definition."""
+        raise NotImplementedError("visit_ClassDef not yet implemented")
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """Extract entity from function/method definition."""
+        raise NotImplementedError("visit_FunctionDef not yet implemented")
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        """Extract entity from async function/method definition."""
+        raise NotImplementedError("visit_AsyncFunctionDef not yet implemented")
+
+    def _get_signature(self, node: ast.FunctionDef) -> str:
+        """Extract function signature string."""
+        raise NotImplementedError("_get_signature not yet implemented")
+
+    def _get_parent_id(self) -> Optional[str]:
+        """Get parent entity ID from stack."""
+        if self.parent_stack:
+            return self.parent_stack[-1].entity_id
+        return None
+
+
+class PythonParser:
+    """
+    Parser for Python source files.
+
+    Coordinates AST parsing and entity extraction.
+    """
+
+    def parse(self, filepath: Path, source: str) -> list[Entity]:
+        """
+        Parse Python source and extract entities.
+
+        Args:
+            filepath: Path to the source file
+            source: Source code content
+
+        Returns:
+            List of extracted Entity objects
+        """
+        extractor = PythonEntityExtractor(str(filepath), source)
+        return extractor.extract()
+
+    def parse_file(self, filepath: Path) -> list[Entity]:
+        """
+        Parse a Python file and extract entities.
+
+        Args:
+            filepath: Path to the Python file
+
+        Returns:
+            List of extracted Entity objects
+        """
+        source = filepath.read_text()
+        return self.parse(filepath, source)

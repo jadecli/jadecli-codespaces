@@ -1,0 +1,58 @@
+# ---
+# entity_id: config-pyproject
+# entity_name: Python Project Configuration
+# entity_type_id: config
+# entity_path: pyproject.toml
+# entity_language: toml
+# entity_state: active
+# entity_created: 2026-01-22T16:00:00Z
+# entity_exports: [entity_store]
+# ---
+
+[project]
+name = "jadecli-entity-store"
+version = "0.1.0"
+description = "AST-based entity indexing system for multi-agent Claude collaboration"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "alex-jadecli", email = "alex@jadecli.com" }
+]
+
+dependencies = [
+    "pydantic>=2.10.0",
+    "click>=8.1.0",
+    "rich>=13.9.0",
+    "tqdm>=4.66.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "mypy>=1.13.0",
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+entity-store = "entity_store.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["entity_store"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true

@@ -1,0 +1,39 @@
+{
+  "_entity_id": "config-package-json",
+  "_entity_name": "Node.js Project Configuration",
+  "_entity_type_id": "config",
+  "_entity_path": "entity_cli/package.json",
+  "_entity_language": "json",
+  "_entity_state": "active",
+  "_entity_created": "2026-01-22T16:00:00Z",
+
+  "name": "entity-cli",
+  "version": "0.1.0",
+  "description": "React Ink CLI for entity store browsing and queries",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "entity-cli": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ink": "^5.0.0",
+    "ink-text-input": "^6.0.0",
+    "ink-select-input": "^6.0.0",
+    "ink-spinner": "^5.0.0",
+    "react": "^18.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "project": "jadecli-codespaces-entity-store",
+  "version": "0.1.0",
+  "created": "2026-01-22T16:00:00Z",
+  "lastUpdated": "2026-01-22T17:00:00Z",
+  "phase": "scaffolding-complete",
+  "features": [
+    {
+      "id": "F001",
+      "name": "Entity Models",
+      "status": "scaffolded",
+      "files": ["entity_store/models.py"],
+      "test": "python -c 'from entity_store.models import Entity'",
+      "dependencies": []
+    },
+    {
+      "id": "F002",
+      "name": "Entity Registry",
+      "status": "scaffolded",
+      "files": ["entity_store/registry.py"],
+      "test": "python -c 'from entity_store.registry import EntityRegistry'",
+      "dependencies": ["F001"]
+    },
+    {
+      "id": "F003",
+      "name": "Neon Client",
+      "status": "scaffolded",
+      "files": ["entity_store/neon_client.py"],
+      "test": "python -c 'from entity_store.neon_client import NeonClient'",
+      "dependencies": ["F001"]
+    },
+    {
+      "id": "F004",
+      "name": "Local Cache",
+      "status": "scaffolded",
+      "files": ["entity_store/cache.py"],
+      "test": "python -c 'from entity_store.cache import EntityCache'",
+      "dependencies": ["F001"]
+    },
+    {
+      "id": "F005",
+      "name": "Python Parser",
+      "status": "scaffolded",
+      "files": ["entity_store/parsers/python_parser.py"],
+      "test": "python -c 'from entity_store.parsers.python_parser import PythonParser'",
+      "dependencies": ["F001"]
+    },
+    {
+      "id": "F006",
+      "name": "TypeScript Parser",
+      "status": "scaffolded",
+      "files": ["entity_store/parsers/typescript_parser.py"],
+      "test": "python -c 'from entity_store.parsers.typescript_parser import TypeScriptParser'",
+      "dependencies": ["F001"]
+    },
+    {
+      "id": "F007",
+      "name": "Markdown Parser",
+      "status": "scaffolded",
+      "files": ["entity_store/parsers/markdown_parser.py"],
+      "test": "python -c 'from entity_store.parsers.markdown_parser import MarkdownParser'",
+      "dependencies": ["F001"]
+    },
+    {
+      "id": "F008",
+      "name": "GraphQL Query Interface",
+      "status": "scaffolded",
+      "files": ["entity_store/query/graphql.py"],
+      "test": "python -c 'from entity_store.query.graphql import EntityQuery'",
+      "dependencies": ["F002"]
+    },
+    {
+      "id": "F009",
+      "name": "CLI Commands",
+      "status": "scaffolded",
+      "files": ["entity_store/cli.py"],
+      "test": "python -m entity_store.cli --help",
+      "dependencies": ["F002", "F008"]
+    },
+    {
+      "id": "F010",
+      "name": "React Ink CLI",
+      "status": "scaffolded",
+      "files": ["entity_cli/src/App.tsx"],
+      "test": "cd entity_cli && npx tsc --noEmit",
+      "dependencies": []
+    },
+    {
+      "id": "F011",
+      "name": "Session Start Hook",
+      "status": "scaffolded",
+      "files": [".claude/hooks/session-start.py"],
+      "test": "python .claude/hooks/session-start.py --help 2>/dev/null || true",
+      "dependencies": ["F002", "F003"]
+    },
+    {
+      "id": "F012",
+      "name": "Entity Query Command",
+      "status": "scaffolded",
+      "files": [".claude/commands/entity-query.md"],
+      "test": "test -f .claude/commands/entity-query.md",
+      "dependencies": []
+    }
+  ]
+}
