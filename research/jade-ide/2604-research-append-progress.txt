@@ -1,0 +1,1375 @@
+# ---
+# entity_id: log-2604-research-progress
+# entity_name: Ubuntu 26.04 Research Progress Log
+# entity_type_id: document
+# entity_path: research/jade-ide/2604-research-append-progress.txt
+# entity_language: plaintext
+# entity_state: active
+# entity_created: 2026-01-23T00:00:00Z
+# entity_actors: [claude]
+# append_only: true
+# ---
+
+================================================================================
+JADE IDE RESEARCH LOG - Ubuntu 26.04 Environment
+================================================================================
+Started: 2026-01-23
+System: Windows 10 + WSL Ubuntu 26.04 | 128GB RAM | 11GB VRAM | 24 threads
+================================================================================
+
+[2026-01-23T00:00:00Z] [INIT] Research session initialized
+[2026-01-23T00:00:00Z] [INIT] Domains: VS Code Fork | Ubuntu Optimization | Dotfiles | Git Culture | ACP
+
+================================================================================
+[2026-01-23T05:18:58Z] [MAIN] Research orchestration started
+[2026-01-23T05:18:58Z] [VSCODE-FORK] Starting VS Code fork architecture research
+
+================================================================================
+DOMAIN 1: VS CODE FORK ARCHITECTURE
+================================================================================
+
+## Key Competitors Analysis
+
+### Cursor IDE
+- Fork of VS Code with native AI integration
+- Custom extension host for AI context
+- Proprietary AI backend (Claude, GPT-4)
+- Tab completion + chat + composer modes
+
+### Kiro (AWS)
+- Amazon's VS Code fork
+- Deep AWS integration
+- Spec-driven development approach
+- Agent-based architecture
+
+### Gemini Code Assist (Google)
+- VS Code extension (not fork)
+- Integration via Agent Client Protocol
+- Gemini model backend
+- Focus on enterprise compliance
+
+### Zed + ACP
+- Not VS Code fork (Rust-native)
+- Open Agent Client Protocol pioneer
+- Collaborating with JetBrains on ACP
+- Claude integration via SDK adapter
+
+## Architecture Patterns to Study
+
+1. Extension Host Modifications
+   - How Cursor intercepts completions
+   - Custom LSP extensions
+   - Context window management
+
+2. AI Context Pipeline
+   - File indexing strategies
+   - Semantic search integration
+   - RAG patterns for codebase
+
+3. Multi-Model Support
+   - Model routing architecture
+   - Fallback strategies
+   - Cost optimization
+
+4. Telemetry & Privacy
+   - Enterprise data residency
+   - Opt-out mechanisms
+   - Audit logging
+
+================================================================================
+[2026-01-23T05:18:58Z] [VSCODE-FORK] Completed initial architecture mapping
+[2026-01-23T05:18:58Z] [UBUNTU-26.04] Starting Ubuntu optimization research
+
+================================================================================
+DOMAIN 2: UBUNTU 26.04 OPTIMIZATION FOR CLAUDE CODE + OLLAMA
+================================================================================
+
+## System Specifications
+- Host: Windows 10 + WSL2
+- Distro: Ubuntu 26.04 LTS
+- RAM: 128 GB
+- VRAM: 11 GB (likely RTX 3080/4080 or similar)
+- CPU: 24 threads (likely 12-core with HT)
+
+## WSL2 Configuration
+
+### .wslconfig (Windows side: %USERPROFILE%\.wslconfig)
+```ini
+[wsl2]
+memory=96GB           # Reserve 32GB for Windows
+processors=20         # Leave 4 threads for Windows
+swap=32GB             # Enable swap for model loading
+localhostForwarding=true
+
+[experimental]
+autoMemoryReclaim=gradual
+sparseVhd=true
+```
+
+### /etc/wsl.conf (Ubuntu side)
+```ini
+[boot]
+systemd=true
+
+[interop]
+enabled=true
+appendWindowsPath=false
+
+[network]
+generateResolvConf=false
+```
+
+## Package Manager Strategy
+
+### Modern Stack (2026)
+1. **mise** (formerly rtx) - Polyglot version manager
+   - Replaces: nvm, pyenv, rbenv, etc.
+   - Config: ~/.config/mise/config.toml
+   - Per-project: .mise.toml
+
+2. **uv** - Fast Python package manager (Astral)
+   - Replaces: pip, pip-tools, poetry, pyenv
+   - 10-100x faster than pip
+   - Lock files: uv.lock
+
+3. **pnpm** - Efficient Node package manager
+   - Content-addressable storage
+   - Strict dependency isolation
+
+4. **cargo** - Rust ecosystem
+
+## Claude Code Optimization
+
+### Environment Variables
+```bash
+# ~/.bashrc or ~/.zshrc
+export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}"
+export CLAUDE_CODE_TELEMETRY=0
+export CLAUDE_CODE_MAX_TOKENS=200000
+export CLAUDE_CODE_MODEL="claude-sonnet-4-20250514"
+
+# Memory optimization
+export NODE_OPTIONS="--max-old-space-size=8192"
+```
+
+### Claude Code Settings (~/.claude/settings.json)
+```json
+{
+  "model": "claude-sonnet-4-20250514",
+  "maxTokens": 200000,
+  "contextWindow": "auto",
+  "permissions": {
+    "allowBash": true,
+    "allowEdit": true,
+    "allowMcp": true
+  },
+  "mcp": {
+    "servers": []
+  }
+}
+```
+
+## Ollama Local Setup
+
+### Installation
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+```
+
+### GPU Configuration (11GB VRAM)
+```bash
+# Models that fit in 11GB VRAM
+ollama pull codellama:13b-instruct-q4_K_M  # ~7.4GB
+ollama pull deepseek-coder:6.7b-instruct   # ~3.8GB
+ollama pull qwen2.5-coder:7b               # ~4.4GB
+
+# For larger models, use CPU offloading
+OLLAMA_NUM_GPU=35  # Layers on GPU
+```
+
+### Ollama + Claude Code Integration
+```bash
+# MCP server for Ollama
+npm install -g @anthropic/mcp-server-ollama
+
+# Add to ~/.claude/settings.json
+{
+  "mcp": {
+    "servers": {
+      "ollama": {
+        "command": "mcp-server-ollama",
+        "args": ["--model", "codellama:13b-instruct"]
+      }
+    }
+  }
+}
+```
+
+## Performance Tuning
+
+### Kernel Parameters (/etc/sysctl.d/99-jade.conf)
+```
+vm.swappiness=10
+vm.dirty_ratio=60
+vm.dirty_background_ratio=2
+fs.inotify.max_user_watches=524288
+fs.file-max=2097152
+```
+
+### systemd Services
+```bash
+# Enable Ollama service
+sudo systemctl enable ollama
+sudo systemctl start ollama
+
+# GPU memory management
+nvidia-smi -pm 1  # Persistence mode
+```
+
+================================================================================
+[2026-01-23T05:18:58Z] [UBUNTU-26.04] Completed optimization guidelines
+[2026-01-23T05:18:58Z] [DOTFILES] Starting dotfiles management research
+
+================================================================================
+DOMAIN 3: DOTFILES MANAGEMENT - MULTI-TIER .CLAUDE CONFIGURATION
+================================================================================
+
+## The 4-Tier .claude Configuration Problem
+
+### Tier 1: Personal (~/.claude)
+- Engineer's personal preferences
+- API keys, personal settings
+- Not committed to any repo
+
+### Tier 2: Project (~/<org>/<project>/.claude)
+- Project-specific rules and context
+- CLAUDE.md with codebase conventions
+- Committed to project repo
+
+### Tier 3: Enterprise/Organization
+- IT-managed compliance settings
+- Model restrictions, audit logging
+- Deployed via MDM or config management
+
+### Tier 4: Shared Dotfiles (GitHub Organization)
+- Reusable .claude templates
+- Organization-wide CLAUDE.md snippets
+- Managed as separate repo/package
+
+## Chezmoi for Dotfiles
+
+### Why Chezmoi?
+- Template support (Go templates)
+- Secret management (1Password, Bitwarden, age)
+- Multi-machine support
+- Git-based versioning
+- Script execution hooks
+
+### Chezmoi Structure for Claude
+```
+~/.local/share/chezmoi/
+├── .chezmoi.toml.tmpl          # Machine-specific config
+├── dot_claude/
+│   ├── settings.json.tmpl      # Personal settings (templated)
+│   ├── private_api_keys        # Encrypted secrets
+│   └── rules/
+│       └── personal.md
+├── .chezmoiignore              # Machine-specific ignores
+└── .chezmoiscripts/
+    └── run_once_setup-claude.sh
+```
+
+### Chezmoi Template Example
+```gotemplate
+{{/* dot_claude/settings.json.tmpl */}}
+{
+  "model": {{ .claude_model | quote }},
+  "maxTokens": {{ .claude_max_tokens }},
+  {{- if .work_machine }}
+  "permissions": {
+    "allowBash": false,
+    "requireApproval": true
+  }
+  {{- else }}
+  "permissions": {
+    "allowBash": true
+  }
+  {{- end }}
+}
+```
+
+### Multi-Tier Resolution Strategy
+
+```bash
+# Resolution order (later overrides earlier):
+1. /etc/claude/settings.json          # Enterprise (IT-managed)
+2. ~/.config/claude/settings.json     # XDG config (chezmoi managed)
+3. ~/.claude/settings.json            # Legacy personal location
+4. ./<project>/.claude/settings.json  # Project-specific
+5. Environment variables              # Runtime overrides
+```
+
+## Organization-Level Shared Dotfiles
+
+### GitHub Organization Repository Pattern
+```
+github.com/<org>/dotfiles-claude/
+├── README.md
+├── templates/
+│   ├── settings.json.tmpl
+│   ├── CLAUDE.md.tmpl
+│   └── rules/
+│       ├── security.md
+│       ├── testing.md
+│       └── code-style.md
+├── scripts/
+│   └── sync-to-project.sh
+└── .chezmoi/
+    └── external.toml     # Pull into personal dotfiles
+```
+
+### Chezmoi External for Org Templates
+```toml
+# ~/.config/chezmoi/chezmoi.toml
+[data.org]
+  name = "jade-ide"
+
+# dot_claude/rules/.chezmoiexternal.toml
+["security.md"]
+    type = "file"
+    url = "https://raw.githubusercontent.com/jade-ide/dotfiles-claude/main/templates/rules/security.md"
+    refreshPeriod = "168h"  # Weekly refresh
+```
+
+## Modern Alternatives to Consider
+
+### 1. Nix Home Manager
+- Declarative, reproducible
+- Complex learning curve
+- Best for full-stack reproducibility
+
+### 2. Ansible for Dotfiles
+- Enterprise-friendly
+- Idempotent operations
+- Good for IT-managed configs
+
+### 3. YADM (Yet Another Dotfiles Manager)
+- Git wrapper approach
+- Simpler than chezmoi
+- Less powerful templating
+
+### 4. mise + dotenvx
+- Modern polyglot approach
+- .env file management
+- Simpler than chezmoi
+
+## Recommended Stack for Jade IDE
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    CONFIGURATION LAYERS                  │
+├─────────────────────────────────────────────────────────┤
+│ Layer 4: Enterprise    │ Ansible/Salt/Puppet            │
+│         (IT/Ops)       │ /etc/claude/                   │
+├─────────────────────────────────────────────────────────┤
+│ Layer 3: Organization  │ GitHub Org repo                │
+│         (Templates)    │ dotfiles-claude/               │
+├─────────────────────────────────────────────────────────┤
+│ Layer 2: Personal      │ Chezmoi                        │
+│         (Engineer)     │ ~/.claude/                     │
+├─────────────────────────────────────────────────────────┤
+│ Layer 1: Project       │ Git (in-repo)                  │
+│         (Team)         │ .claude/                       │
+└─────────────────────────────────────────────────────────┘
+```
+
+================================================================================
+[2026-01-23T05:18:58Z] [DOTFILES] Completed multi-tier configuration mapping
+[2026-01-23T05:18:58Z] [GIT-CULTURE] Starting Git culture research
+
+================================================================================
+DOMAIN 4: TEAM-ORIENTED GIT CULTURE & PROJECT MANAGEMENT
+================================================================================
+
+## Anti-Patterns to Avoid (Learned from Industry)
+
+### 1. The Monolithic .env Problem
+- Anti-pattern: Single .env with all secrets
+- Solution: Tiered config with clear ownership
+
+### 2. "Works on My Machine"
+- Anti-pattern: Undocumented local dependencies
+- Solution: mise/.tool-versions + devcontainer.json
+
+### 3. Commit Message Chaos
+- Anti-pattern: "fix stuff", "wip", "asdf"
+- Solution: Conventional Commits + commitlint
+
+### 4. Review Bottlenecks
+- Anti-pattern: PRs waiting days for review
+- Solution: CODEOWNERS + async review culture
+
+### 5. Main Branch Instability
+- Anti-pattern: Breaking changes on main
+- Solution: Required CI + branch protection
+
+## Modern Git Practices for AI-Assisted Teams
+
+### 1. Conventional Commits
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore
+
+### 2. Branch Strategy for AI Collaboration
+
+```
+main
+├── develop
+│   ├── feature/jade-123-new-feature
+│   ├── claude/session-abc123          # AI-generated branches
+│   └── fix/jade-456-bug-fix
+└── release/v1.0.0
+```
+
+### 3. AI-Aware CODEOWNERS
+```
+# CODEOWNERS
+* @jade-ide/core-team
+
+# AI-assisted files need human review
+.claude/ @jade-ide/ai-governance
+CLAUDE.md @jade-ide/ai-governance
+
+# Auto-generated code needs extra scrutiny
+*.generated.ts @jade-ide/code-quality
+```
+
+### 4. GitHub Actions for AI Projects
+```yaml
+# .github/workflows/ai-review.yml
+name: AI Code Review
+on: [pull_request]
+
+jobs:
+  ai-safety-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check AI-generated code markers
+        run: |
+          # Ensure AI-generated code is marked
+          git diff --name-only origin/main | xargs grep -L "AI-GENERATED" || true
+
+      - name: Validate CLAUDE.md
+        run: |
+          # Ensure CLAUDE.md is valid
+          npx claude-md-lint CLAUDE.md
+```
+
+### 5. Pre-commit Hooks
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.29.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+
+  - repo: local
+    hooks:
+      - id: validate-claude-md
+        name: Validate CLAUDE.md
+        entry: ./scripts/validate-claude-md.sh
+        language: script
+        files: CLAUDE\.md$
+```
+
+## GitHub Organization Setup for Jade IDE
+
+### Repository Structure
+```
+github.com/jade-ide/
+├── jade-ide                  # Main IDE fork
+├── jade-cli                  # CLI extension
+├── dotfiles-claude           # Shared .claude configs
+├── .github                   # Org-wide workflows
+├── terraform-infrastructure  # IaC
+└── docs                      # Documentation site
+```
+
+### Org-Wide Settings (.github repo)
+```
+.github/
+├── ISSUE_TEMPLATE/
+│   ├── bug_report.yml
+│   ├── feature_request.yml
+│   └── config.yml
+├── PULL_REQUEST_TEMPLATE.md
+├── CODEOWNERS
+├── SECURITY.md
+├── FUNDING.yml
+└── workflows/
+    └── org-ci.yml
+```
+
+### Branch Protection Rules
+- Require PR reviews (2 approvers)
+- Require status checks
+- Require conversation resolution
+- Require signed commits (optional)
+- Include administrators in restrictions
+
+================================================================================
+[2026-01-23T05:18:58Z] [GIT-CULTURE] Completed Git culture documentation
+[2026-01-23T05:18:58Z] [AGENT-PROTOCOLS] Starting agent protocol research
+
+================================================================================
+DOMAIN 5: AGENT PROTOCOLS (ACP, MCP, A2A)
+================================================================================
+
+## Protocol Landscape (2026)
+
+### 1. Agent Client Protocol (ACP) - Zed
+- **Purpose**: IDE <-> Agent communication
+- **License**: Apache 2.0
+- **Key Adopters**: Zed, JetBrains, Gemini CLI
+- **Claude Integration**: Via Zed SDK adapter
+
+```
+┌─────────────┐     ACP      ┌─────────────┐
+│    IDE      │◄────────────►│   Agent     │
+│ (Zed, JB)   │              │ (Claude)    │
+└─────────────┘              └─────────────┘
+```
+
+### 2. Model Context Protocol (MCP) - Anthropic
+- **Purpose**: LLM <-> Tools/Data communication
+- **Specification**: JSON-RPC 2.0 over stdio/HTTP
+- **Key Feature**: Bidirectional, tool exposure
+
+```
+┌─────────────┐     MCP      ┌─────────────┐
+│   Claude    │◄────────────►│ MCP Server  │
+│             │              │ (Tools)     │
+└─────────────┘              └─────────────┘
+```
+
+### 3. Agent-to-Agent (A2A) - Google/Linux Foundation
+- **Purpose**: Multi-agent orchestration
+- **Status**: Merged with ACP under LF
+- **Key Feature**: Agent discovery, delegation
+
+### Protocol Comparison
+
+| Feature              | ACP       | MCP       | A2A       |
+|----------------------|-----------|-----------|-----------|
+| Primary Use          | IDE ↔ AI  | AI ↔ Tools| AI ↔ AI   |
+| Transport            | HTTP/WS   | stdio/HTTP| HTTP/WS   |
+| Specification        | REST      | JSON-RPC  | REST      |
+| Discovery            | Yes       | Limited   | Yes       |
+| Anthropic Support    | Via SDK   | Native    | Indirect  |
+
+## Jade IDE Protocol Strategy
+
+### Recommended Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      JADE IDE                            │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │   Editor    │  │  Debugger   │  │  Terminal   │     │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
+│         │                │                │             │
+│         ▼                ▼                ▼             │
+│  ┌──────────────────────────────────────────────┐      │
+│  │            JADE PROTOCOL BRIDGE               │      │
+│  │  ┌────────┐  ┌────────┐  ┌────────┐          │      │
+│  │  │  ACP   │  │  MCP   │  │  A2A   │          │      │
+│  │  │Adapter │  │Adapter │  │Adapter │          │      │
+│  │  └────┬───┘  └────┬───┘  └────┬───┘          │      │
+│  └───────┼───────────┼───────────┼──────────────┘      │
+│          │           │           │                      │
+└──────────┼───────────┼───────────┼──────────────────────┘
+           │           │           │
+           ▼           ▼           ▼
+    ┌──────────┐ ┌──────────┐ ┌──────────┐
+    │  Claude  │ │  Ollama  │ │  Other   │
+    │  (API)   │ │ (Local)  │ │  Agents  │
+    └──────────┘ └──────────┘ └──────────┘
+```
+
+### MCP Server Implementation for Jade
+
+```typescript
+// jade-cli/src/mcp/server.ts
+import { McpServer } from "@anthropic/mcp-server";
+
+const server = new McpServer({
+  name: "jade-cli",
+  version: "1.0.0",
+});
+
+// Expose Jade-specific tools
+server.tool("jade/edit-file", {
+  description: "Edit a file with AI assistance",
+  inputSchema: {
+    type: "object",
+    properties: {
+      path: { type: "string" },
+      instruction: { type: "string" }
+    }
+  },
+  handler: async (input) => {
+    // Implementation
+  }
+});
+
+server.tool("jade/run-test", {
+  description: "Run tests for current project",
+  inputSchema: {
+    type: "object",
+    properties: {
+      pattern: { type: "string" }
+    }
+  },
+  handler: async (input) => {
+    // Implementation
+  }
+});
+```
+
+### ACP Integration for External Agents
+
+```typescript
+// jade-ide/src/acp/client.ts
+import { AcpClient } from "@zed/acp-sdk";
+
+const client = new AcpClient({
+  endpoint: "http://localhost:8080/acp",
+});
+
+// Connect to external agents
+await client.connect("gemini-cli");
+await client.connect("claude-code");
+
+// Delegate task
+const result = await client.delegate({
+  agent: "claude-code",
+  task: "refactor-function",
+  context: { file: "src/main.ts", function: "processData" }
+});
+```
+
+================================================================================
+[2026-01-23T05:18:58Z] [AGENT-PROTOCOLS] Completed protocol architecture documentation
+
+================================================================================
+RESEARCH SESSION COMPLETE
+================================================================================
+Timestamp: 2026-01-23T05:18:58Z
+Domains Researched: 5
+  1. VS Code Fork Architecture
+  2. Ubuntu 26.04 Optimization
+  3. Dotfiles Management (Chezmoi + Multi-Tier .claude)
+  4. Git Culture & Team Practices
+  5. Agent Protocols (ACP, MCP, A2A)
+
+Next Steps:
+- [ ] Create detailed implementation plan
+- [ ] Set up jade-ide GitHub organization
+- [ ] Initialize dotfiles-claude repository
+- [ ] Configure Ubuntu 26.04 base environment
+- [ ] Implement MCP server for jade-cli
+
+================================================================================
+[2026-01-23T05:18:58Z] [MAIN] Research orchestration complete
+
+================================================================================
+[AGENT: PROTOCOLS] Web Research Results
+Timestamp: 2026-01-23T12:30:00Z
+================================================================================
+
+## 1. AGENT CLIENT PROTOCOL (ACP) - Zed's Protocol
+
+### Overview
+ACP is an open standard that standardizes communication between code editors and
+coding agents. Launched by Zed in August 2025 under Apache License, it's often
+described as "the LSP for AI coding agents."
+
+### Origins
+- Early 2025: Zed built experimental "agentic editing" features
+- Google approached with Gemini CLI integration needs
+- August 2025: ACP launched as open standard
+- October 2025: JetBrains partnership announced
+
+### Technical Architecture
+- Transport: JSON-RPC over stdio (local) or HTTP/WebSocket (remote)
+- Message types: session/initialize, session/new, session/prompt, session/update, session/cancel
+- Reuses MCP data types where possible (text content, code diffs, tool results)
+- All human-readable text defaults to Markdown format
+- SDKs available in TypeScript and Rust
+
+### Supported Editors
+- Zed (native)
+- Neovim (via CodeCompanion and avante.nvim plugins)
+- Emacs (via agent-shell plugin)
+- Marimo (Python notebooks)
+- JetBrains IDEs (IntelliJ IDEA, PyCharm, PhpStorm - in development)
+- Eclipse IDE (prototype)
+
+### Supported Agents
+- Claude Code
+- Gemini CLI
+- Codex CLI
+- StackPack
+- Goose (Block's agent)
+- Toad (terminal agent)
+
+### JetBrains Configuration Example (acp.json):
+```json
+{
+  "agent_servers": {
+    "Example Agent": {
+      "command": "/path/to/agent",
+      "args": ["acp"],
+      "env": { "API_KEY": "your-api-key" },
+      "use_idea_mcp": false,
+      "use_custom_mcp": true
+    }
+  }
+}
+```
+
+### Key Resources
+- Official: https://zed.dev/acp
+- GitHub: https://github.com/agentclientprotocol/agent-client-protocol
+- Docs: https://agentclientprotocol.com/
+
+--------------------------------------------------------------------------------
+
+## 2. MODEL CONTEXT PROTOCOL (MCP) - Anthropic's Protocol
+
+### Overview
+MCP is an open standard introduced by Anthropic in November 2024 to standardize
+how AI systems integrate with external tools, systems, and data sources.
+Described as "USB-C port for AI applications."
+
+### Technical Architecture
+- Transport: JSON-RPC 2.0 over stdio, HTTP, or streamable HTTP
+- Components: MCP Servers (expose tools/resources), MCP Clients (AI applications)
+- Server types: Local (stdio), Remote (HTTP servers - recommended)
+- Stateless at protocol level; servers can implement state management
+
+### Key Capabilities
+- Resources: Data sources accessible via @ mentions
+- Tools: Functions AI can call (file operations, API calls, database queries)
+- Prompts: Reusable prompt templates exposed as commands
+- Sampling: Allows servers to request LLM completions
+
+### Claude Code MCP Configuration Scopes
+- local: Available only to you in current project (default)
+- project: Shared via .mcp.json file with project team
+- user: Available across all your projects
+
+### Configuration Example (settings.json):
+```json
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-sequentialthinking-tools"]
+    },
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@anthropic/mcp-server-filesystem", "/path/to/allowed/dir"]
+    }
+  }
+}
+```
+
+### CLI Installation:
+```bash
+claude mcp add-json vscode '{"type":"stdio","command":"npx","args":["github:malvex/mcp-server-vscode"]}' -s user
+```
+
+### 2025 Adoption Timeline
+- November 2024: MCP launched by Anthropic
+- March 2025: OpenAI officially adopted MCP
+- May 2025 (Build): GitHub and Microsoft joined MCP steering committee
+- Mid-2025: VS Code, JetBrains IDEs, GitHub Copilot added MCP support
+- Late 2025: ~16,000 community MCP servers available
+- December 2025: Donated to Agentic AI Foundation (AAIF) under Linux Foundation
+
+### Current Stats
+- 97+ million monthly SDK downloads
+- 10,000+ active servers
+- 75+ official connectors in Claude directory
+- SDKs for all major programming languages
+
+### Security Considerations
+- April 2025: Security researchers identified issues (prompt injection, tool permissions)
+- Recommendation: Only use trusted MCP servers
+- Caution with servers that fetch untrusted content (prompt injection risk)
+
+### Key Resources
+- Docs: https://docs.anthropic.com/en/docs/build-with-claude/mcp
+- Claude Code MCP: https://code.claude.com/docs/en/mcp
+- VS Code MCP: https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+
+--------------------------------------------------------------------------------
+
+## 3. AGENT-TO-AGENT PROTOCOL (A2A) - Google's Protocol
+
+### Overview
+A2A enables peer-to-peer communication between AI agents across vendors, apps,
+and organizations. Designed for enterprise-scale interoperability.
+
+### Timeline
+- April 9, 2025: Google debuted A2A with 50+ technology partners
+- June 23, 2025: Donated to Linux Foundation
+- July 31, 2025: Version 0.3 released (gRPC support, signed security cards)
+- September 2025: IBM's ACP (Agent Communication Protocol) merged with A2A
+
+### Technical Architecture
+- Built on web-native technologies: HTTP, JSON, Server-Sent Events
+- Discovery: Agent Cards (JSON metadata at /.well-known/agent.json)
+- State management: Session-level context, agent-level state, task-level persistence
+- TaskStore: Built-in persistence for complex multi-message transactions
+- Supports long-running tasks and secure delegation
+
+### Agent Card Example:
+```json
+{
+  "name": "My Agent",
+  "description": "Does useful things",
+  "url": "https://agent.example.com",
+  "capabilities": ["code-review", "testing"],
+  "authentication": {
+    "type": "oauth2"
+  }
+}
+```
+
+### Industry Support (150+ organizations)
+Founding: Google, AWS, Cisco, Microsoft, Salesforce, SAP, ServiceNow
+Partners: Atlassian, Box, Cohere, Intuit, Langchain, MongoDB, PayPal, Workday
+
+### ACP Merger Details
+- March 2025: IBM Research launched ACP for BeeAI Platform
+- IBM donated BeeAI/ACP to Linux Foundation
+- September 2025: ACP officially merged with A2A
+- Kate Blair (IBM) joined A2A Technical Steering Committee
+- BeeAI platform now uses A2A instead of ACP
+
+### Key Resources
+- Official: https://a2a-protocol.org/latest/
+- Linux Foundation announcement: https://www.linuxfoundation.org/press/linux-foundation-launches-the-agent2agent-protocol-project
+
+--------------------------------------------------------------------------------
+
+## 4. PROTOCOL COMPARISON & WHEN TO USE EACH
+
+### Scope and Purpose
+| Protocol | Creator    | Focus                    | Primary Use Case              |
+|----------|------------|--------------------------|-------------------------------|
+| MCP      | Anthropic  | Model-to-tool connection | Grounding agents with tools   |
+| ACP      | Zed/Google | Editor-to-agent bridge   | IDE integration               |
+| A2A      | Google     | Agent-to-agent comms     | Cross-org collaboration       |
+
+### Key Differences
+
+#### MCP (Model Context Protocol)
+- Focus: Connecting AI models to data sources and tools
+- Pattern: Client-server (AI as client, tools as servers)
+- State: Stateless at protocol level
+- Best for: Tool access, resource retrieval, prompt templates
+
+#### ACP (Agent Client Protocol - Zed)
+- Focus: Connecting code editors to AI coding agents
+- Pattern: Editor-agent communication via JSON-RPC
+- State: Session-based with message streaming
+- Best for: IDE integration, agentic coding workflows
+
+#### A2A (Agent-to-Agent Protocol)
+- Focus: Multi-agent collaboration across boundaries
+- Pattern: Peer-to-peer with capability discovery
+- State: Three-level (session, agent, task)
+- Best for: Enterprise workflows, cross-vendor agent coordination
+
+### Complementary Usage
+These protocols are NOT competitive - they're complementary:
+
+1. Use MCP to connect agents to tools and data sources
+2. Use ACP (Zed) to integrate agents into code editors
+3. Use A2A for agent-to-agent communication in complex workflows
+
+### Architecture Recommendation by Pattern
+- Centralized (single agent): MCP
+- Collaborative (multiple agents): A2A
+- Local-first (IDE/editor): ACP (Zed)
+
+--------------------------------------------------------------------------------
+
+## 5. AGENTIC AI FOUNDATION (AAIF) - Governance Umbrella
+
+### Formation
+December 9, 2025: Linux Foundation announced AAIF formation
+
+### Founding Projects
+1. MCP (Model Context Protocol) - from Anthropic
+2. Goose (agent framework) - from Block
+3. AGENTS.md (repository instruction file) - from OpenAI
+
+### Membership Tiers
+
+#### Platinum Members
+AWS, Anthropic, Block, Bloomberg, Cloudflare, Google, Microsoft, OpenAI
+
+#### Gold Members
+Adyen, Arcade.dev, Cisco, Datadog, Docker, Ericsson, IBM, JetBrains, Okta,
+Oracle, Runlayer, Salesforce, SAP, Shopify, Snowflake, Temporal, Tetrate, Twilio
+
+### Governance Structure
+- AAIF Governing Board: Strategic decisions, budget, member recruitment
+- Individual projects: Maintain full autonomy over technical direction
+- Goal: Neutral platform for agentic systems development
+
+### Related Initiatives Under Linux Foundation
+- A2A Protocol Project (separate from AAIF)
+- AGNTCY Project
+- Both coordinate with AAIF for interoperability
+
+### Vision
+"Become what W3C is for the Web: standards and protocols guaranteeing
+interoperability, open access, and freedom of choice with open source
+reference implementations." - Block
+
+--------------------------------------------------------------------------------
+
+## 6. IDE IMPLEMENTATION EXAMPLES
+
+### VS Code MCP Server Setup
+
+1. Native VS Code support (Copilot):
+```
+Cmd/Ctrl+Shift+P -> "MCP: Add Server"
+Choose transport (stdio/HTTP)
+Configure command and arguments
+```
+
+2. devcontainer.json configuration:
+```json
+{
+  "mcpServers": {
+    "example-server": {
+      "command": "npx",
+      "args": ["-y", "@example/mcp-server"]
+    }
+  }
+}
+```
+
+### Zed ACP Configuration
+Built-in support - agents appear in Assistant panel automatically when configured.
+
+### JetBrains (AI Assistant)
+1. Create acp.json in project root or IDE config
+2. Configure agent servers with command, args, env
+3. Agents appear in AI Chat interface
+
+### Neovim Plugins
+- CodeCompanion: Full ACP support
+- avante.nvim: ACP-compatible agent integration
+
+### Emacs
+- acp.el package: Client implementation
+- Functions: acp-make-client, acp-send-request
+- Supports: initialize, session/new, session/prompt, session/cancel
+
+--------------------------------------------------------------------------------
+
+## 7. KEY TAKEAWAYS FOR JADE IDE
+
+1. **Protocol Selection**: For a VS Code fork:
+   - Implement MCP for tool/resource integration (essential)
+   - Consider ACP for external agent support (recommended)
+   - A2A if multi-agent orchestration needed (future)
+
+2. **MCP is the Foundation**: 97M+ downloads, universal adoption
+   - VS Code has native MCP support to build upon
+   - Can leverage existing 16K+ community servers
+
+3. **ACP Growing Fast**: IDE vendors converging
+   - JetBrains, Neovim, Emacs all supporting
+   - Good for "bring your own agent" flexibility
+
+4. **Governance Aligned**: All protocols under Linux Foundation
+   - MCP: Agentic AI Foundation (AAIF)
+   - A2A: Linux Foundation AI & Data
+   - ACP: Open standard, Apache licensed
+
+5. **Implementation Priority**:
+   - Phase 1: MCP client (already in VS Code Copilot)
+   - Phase 2: ACP server support (for external agents)
+   - Phase 3: A2A integration (for agent orchestration)
+
+--------------------------------------------------------------------------------
+
+## SOURCES
+
+### ACP (Agent Client Protocol)
+- https://zed.dev/acp
+- https://github.com/agentclientprotocol/agent-client-protocol
+- https://agentclientprotocol.com/
+- https://blog.jetbrains.com/ai/2025/10/jetbrains-zed-open-interoperability-for-ai-coding-agents-in-your-ide/
+- https://www.jetbrains.com/help/ai-assistant/acp.html
+
+### MCP (Model Context Protocol)
+- https://www.anthropic.com/news/model-context-protocol
+- https://docs.anthropic.com/en/docs/build-with-claude/mcp
+- https://code.claude.com/docs/en/mcp
+- https://code.visualstudio.com/docs/copilot/customization/mcp-servers
+- https://en.wikipedia.org/wiki/Model_Context_Protocol
+
+### A2A (Agent-to-Agent Protocol)
+- https://a2a-protocol.org/latest/
+- https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/
+- https://developers.googleblog.com/en/google-cloud-donates-a2a-to-linux-foundation/
+- https://lfaidata.foundation/communityblog/2025/08/29/acp-joins-forces-with-a2a-under-the-linux-foundations-lf-ai-data/
+
+### AAIF (Agentic AI Foundation)
+- https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation
+- https://openai.com/index/agentic-ai-foundation/
+- https://block.xyz/inside/block-anthropic-and-openai-launch-the-agentic-ai-foundation
+
+### Protocol Comparisons
+- https://heidloff.net/article/mcp-acp-a2a-agent-protocols/
+- https://workos.com/guide/understanding-mcp-acp-a2a
+- https://boomi.com/blog/what-is-mcp-acp-a2a/
+
+================================================================================
+
+================================================================================
+[AGENT: GIT-CULTURE] Web Research Results
+Timestamp: 2026-01-23T12:45:00Z
+================================================================================
+
+## 1. GitHub Organization Best Practices for AI-Native Companies
+
+### AI-Native Development Evolution (2025-2026)
+- GitHub is transitioning from "AI-infused" to "AI-native" platforms where AI is 
+  integrated into every phase of the SDLC, not just as an add-on
+- 84% of developers now use AI coding tools (GitHub Octoverse 2025)
+- 41% of new code originates from AI-assisted generation
+- 630M+ repositories on GitHub with 36M new developers in 2025
+
+### Key Enterprise Practices
+1. **Embrace Experimentation**: Allow teams to test new AI tools while maintaining guardrails
+2. **Native Security Tools**: Embed security scanning (GitHub Advanced Security) into developer workflow
+3. **Centralized Governance**: Use administration features to manage policies at scale
+4. **Clear Documentation**: CLAUDE.md/AGENTS.md files for AI context and repo etiquette
+
+### Project Padawan & Agent HQ (GitHub Universe 2025)
+- Copilot can be assigned issues directly and produces fully-tested PRs
+- Agent HQ provides centralized mission control to assign, govern, and track multiple agents
+- Agents can monitor repo events, respond to PRs, and perform code reviews
+
+Sources:
+- https://resources.github.com/keynotes/github-insights-google-cloud-next-2025/
+- https://github.blog/news-insights/company-news/welcome-home-agents/
+- https://azure.microsoft.com/en-us/blog/github-universe-2025-where-developer-innovation-took-center-stage/
+
+--------------------------------------------------------------------------------
+
+## 2. CODEOWNERS Patterns for AI-Generated Code Review
+
+### Current Adoption Stats
+- Only ~7% of top-starred GitHub repos use CODEOWNERS
+- Adoption concentrates on critical non-code assets: build workflows, dependency 
+  manifests, licensing files (governance/security orientation)
+
+### AI Code Review Principles
+1. **No Special Treatment**: AI-generated diffs should be reviewed as rigorously as human code
+2. **LLMs Catch LLM Mistakes**: AI tools are particularly good at catching the types 
+   of errors that AI generates
+3. **Human Owns Merge Button**: Despite AI assistance, humans retain final merge authority
+
+### CODEOWNERS Best Practices for AI
+```
+# AI-generated code requires senior review
+/ai-generated/**  @senior-devs @security-team
+
+# Automated PRs from AI agents
+/.github/workflows/**  @platform-team @security-team
+
+# Critical paths always need human review  
+/src/auth/**  @auth-owners
+/src/payments/**  @payments-owners @security-team
+```
+
+### Multi-Layer Review Architecture (Recommended)
+1. Layer 1: Real-time IDE feedback (Cursor, Copilot)
+2. Layer 2: PR-level AI analysis (CodeRabbit, Qodo)
+3. Layer 3: Periodic architectural reviews (Claude Code)
+
+Sources:
+- https://github.blog/ai-and-ml/generative-ai/code-review-in-the-age-of-ai-why-developers-will-always-own-the-merge-button/
+- https://graphite.com/guides/ai-code-review-implementation-best-practices
+- https://devblogs.microsoft.com/engineering-at-microsoft/enhancing-code-quality-at-scale-with-ai-powered-code-reviews/
+
+--------------------------------------------------------------------------------
+
+## 3. Branch Strategies When AI Agents Create Branches
+
+### Git Worktrees: The Gold Standard
+Git worktrees are the critical infrastructure for multi-agent coding:
+- Multiple working directories from a single repository
+- Each worktree operates independently while sharing Git history
+- Enables true parallel development without branch switching overhead
+- Each AI agent gets its own isolated workspace
+
+### Branch Naming Conventions
+```bash
+# AI agent branches (recommended patterns)
+agent/claude/<issue-number>-<description>
+agent/copilot/<issue-number>-<description>
+ai/<agent-name>/<feature>
+
+# Example from GitHub Copilot agent
+feat/123-user-profiles  # Tied to issue numbers
+```
+
+### Multi-Agent Orchestration Strategies
+
+1. **Isolation Pattern**: Each agent gets its own branch/worktree
+   ```bash
+   git worktree add ../agent-docs docs-update
+   git worktree add ../agent-tests test-coverage
+   git worktree add ../agent-refactor cleanup
+   ```
+
+2. **Hierarchical Pattern**: Manager agent delegates to worker agents
+   - Planner agent creates high-level plan
+   - Worker agents execute in isolated worktrees
+   - Conflicts resolved at merge time by orchestrator
+
+3. **Queue Pattern**: Orchestration script sequences tasks
+   ```bash
+   # Assign each agent its own branch
+   # Use parent orchestration script to queue tasks
+   ```
+
+### Cursor 2.0 Multi-Agent System (October 2025)
+- Supports up to 8 concurrent AI coding agents
+- Independent workspaces via git worktrees or remote machines
+- Prevents conflicts when multiple agents modify code simultaneously
+
+### VS Code 1.107 (November 2025)
+- Background agents gain isolated execution using Git worktrees
+- Can spin up separate worktree per session
+- Multiple background agents run without conflicting edits
+
+Sources:
+- https://docs.agentinterviews.com/blog/parallel-ai-coding-with-gitworktrees/
+- https://nx.dev/blog/git-worktrees-ai-agents
+- https://medium.com/@raminmammadzada/solving-parallel-workflow-conflicts-between-ai-agents-and-developers-in-shared-codebases-286504422125
+- https://www.anthropic.com/engineering/claude-code-best-practices
+
+--------------------------------------------------------------------------------
+
+## 4. Pre-commit Hooks and Conventional Commits
+
+### AI-Powered Commit Message Generation
+Tools available for automatic conventional commit messages:
+- `git-ai-commit`: CLI + git hook, supports OpenAI, Claude, Ollama
+- `partcad/pre-commit`: Auto-generates commit messages from staged changes
+- Integrates with Cursor IDE workflow
+
+### Security Warning for AI Commit Tools
+When using `--open-source` mode, complete diffs are sent to AI APIs:
+- Actual code content transmitted over network
+- Can potentially expose sensitive/proprietary code
+- Consider self-hosted/local models (Ollama) for sensitive repos
+
+### Conventional Commits Enforcement
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, docs, style, refactor, perf, test, chore]
+```
+
+### Recommended Pre-commit Stack (2025)
+```yaml
+repos:
+  # Code formatting
+  - repo: https://github.com/psf/black
+    hooks: [black]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    hooks: [ruff]
+  
+  # Security
+  - repo: https://github.com/Yelp/detect-secrets
+    hooks: [detect-secrets]
+  
+  # Conventional commits
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    hooks: [conventional-pre-commit]
+  
+  # AI-specific
+  - repo: local
+    hooks:
+      - id: validate-frontmatter
+        name: Validate entity frontmatter
+        entry: python entity_store/validate_frontmatter.py
+        language: python
+```
+
+### GitHub Actions + AI Agents (CI/CD Integration)
+- GitHub Agentic Workflows: Embed autonomous AI agents into GitHub Actions
+- AI can interpret natural language instructions dynamically
+- Example: "Analyse failing CI checks, fix the code, and push changes"
+
+Sources:
+- https://gatlenculp.medium.com/effortless-code-quality-the-ultimate-pre-commit-hooks-guide-for-2025-57ca501d9835
+- https://github.com/compilerla/conventional-pre-commit
+- https://pypi.org/project/git-ai-commit/
+- https://github.blog/news-insights/company-news/welcome-home-agents/
+
+--------------------------------------------------------------------------------
+
+## 5. Anti-Patterns to Avoid with AI Coding Assistants
+
+### Code Quality Anti-Patterns
+
+1. **Blind Trust in AI Output**
+   - Copilot can be "confidently wrong" with subtle hidden bugs
+   - Invalid syntax, missing null checks, hallucinated API calls
+   - Claude can hallucinate non-existent libraries
+   - ALWAYS review every line before merging
+
+2. **Context Limitation Ignorance**
+   - Copilot context usually limited to open files
+   - Struggles with project-wide changes and multi-file modifications
+   - Large codebases cause context loss and risky proposals
+
+3. **Lack of Customization**
+   - Default AI tools don't learn team coding style
+   - Can't enforce specific patterns or approved library lists
+   - Need explicit configuration or training
+
+4. **Security Negligence**
+   - AI can generate insecure code patterns
+   - Incomplete sanitization, unsafe regex, misconfigured IAM
+   - Unvalidated user input paths
+   - Stale infrastructure templates
+
+### Team/Process Anti-Patterns
+
+5. **Skill Erosion**
+   - Junior devs risk missing learning opportunities
+   - Debugging and architectural skills can atrophy
+   - AI should supplement, not replace, human expertise
+
+6. **No Review Layer for AI PRs**
+   - Enterprise/regulated environments need extra review layers
+   - Risk of leaking sensitive patterns or credentials
+   - AI-generated PRs should go through same review as human PRs
+
+7. **Inconsistent AI Usage Policies**
+   - Teams making inconsistent decisions about AI use
+   - No documentation about when to use/not use AI tools
+   - Missing approval processes for production code
+
+8. **Training Gap**
+   - Simply providing AI tool access without training
+   - Teams see minimal benefits without education
+   - Need training on advanced prompting, meta-prompting, prompt chaining
+
+### Git Workflow Anti-Patterns
+
+9. **No Branch Isolation**
+   - Multiple agents working in same branch
+   - File conflicts and overwrites
+   - Broken builds from concurrent edits
+
+10. **Cluttered History**
+    - Many "trial and error" commits from AI iterations
+    - Confuses future maintainers and AI analyses
+    - Should squash minor commits before merging
+
+11. **Skipping File Locking**
+    - No coordination between agents on shared files
+    - Need explicit file-level locking for multi-agent work
+    - Frontmatter-based locking recommended (see jadecli pattern)
+
+### Best Practices to Counter Anti-Patterns
+
+1. **Governance Framework**: Clear policies on AI usage, validation, documentation
+2. **Multi-Layer Review**: IDE -> PR-level AI -> Human review -> Architectural review
+3. **Isolation via Worktrees**: Each agent in separate worktree
+4. **Training Investment**: Prompt engineering education for all devs
+5. **Security Scanning**: Automated security checks on all AI-generated code
+6. **Linear History**: Squash commits, maintain clean git log
+7. **File Locking**: Frontmatter-based or explicit locking system
+
+Sources:
+- https://skywork.ai/blog/claude-code-vs-github-copilot-2025-comparison/
+- https://www.faros.ai/blog/best-ai-coding-agents-2026
+- https://getdx.com/blog/ai-code-enterprise-adoption/
+- https://www.digitalapplied.com/blog/multi-agent-coding-parallel-development
+
+--------------------------------------------------------------------------------
+
+## Summary: Key Recommendations for AI-Native Git Culture
+
+### For Organizations
+1. Establish clear AI usage governance frameworks
+2. Implement multi-layer code review (AI + human)
+3. Invest in developer AI training (prompting, workflow integration)
+4. Use centralized dashboards for AI agent visibility (Agent HQ pattern)
+
+### For Teams
+1. Use git worktrees for multi-agent parallel development
+2. Implement file locking for shared resources
+3. Standardize branch naming for AI-generated branches
+4. Configure CODEOWNERS for AI-generated code paths
+
+### For Individual Developers
+1. Always review AI-generated code thoroughly
+2. Maintain core programming skills alongside AI tools
+3. Use conventional commits (manually or AI-assisted)
+4. Document AI usage in commit messages or PR descriptions
+
+### Tools Stack (2025-2026)
+- Version Control: Git + worktrees
+- AI Coding: Cursor 2.0, Claude Code, GitHub Copilot
+- Pre-commit: pre-commit framework + conventional-pre-commit
+- Code Review: CodeRabbit, Qodo, GitHub Copilot PR review
+- CI/CD: GitHub Actions with Agentic Workflows
+- Orchestration: Agent HQ, Conductor, MCP
+
+================================================================================
