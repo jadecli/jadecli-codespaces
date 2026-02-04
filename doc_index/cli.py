@@ -1,7 +1,9 @@
 """CLI for document indexing."""
 
-import click
 from pathlib import Path
+
+import click
+
 from doc_index.indexer import DocumentIndexer
 
 
