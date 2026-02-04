@@ -23,6 +23,7 @@ Test coverage:
 - Cache operations
 """
 
+from pathlib import Path
 from uuid import UUID
 
 import pytest
@@ -240,23 +241,163 @@ class TestEntityRegistry:
 
     def test_register_entity(self) -> None:
         """Test registering a new entity."""
-        pytest.skip("Registry not yet implemented")
+        from entity_store.neon_client import NeonClient
+        from entity_store.registry import EntityRegistry
+
+        client = NeonClient()
+        registry = EntityRegistry(client)
+
+        entity = Entity(
+            entity_name="TestClass",
+            entity_type_id=EntityType.CLASS,
+            entity_path="test/file.py",
+            entity_line_start=1,
+        )
+
+        entity_id = registry.register(entity)
+        assert entity_id == entity.entity_id
+
+        # Verify entity is in registry
+        retrieved = registry.get(entity_id)
+        assert retrieved is not None
+        assert retrieved.entity_name == "TestClass"
 
     def test_get_entity(self) -> None:
         """Test retrieving an entity by ID."""
-        pytest.skip("Registry not yet implemented")
+        from entity_store.neon_client import NeonClient
+        from entity_store.registry import EntityRegistry
+
+        client = NeonClient()
+        registry = EntityRegistry(client)
+
+        entity = Entity(
+            entity_name="TestFunction",
+            entity_type_id=EntityType.FUNCTION,
+            entity_path="test/file.py",
+            entity_line_start=1,
+        )
+
+        entity_id = registry.register(entity)
+        retrieved = registry.get(entity_id)
+
+        assert retrieved is not None
+        assert retrieved.entity_id == entity_id
+
+        # Test non-existent entity
+        from uuid import uuid4
+
+        non_existent = registry.get(uuid4())
+        assert non_existent is None
 
     def test_filter_by_type(self) -> None:
         """Test filtering entities by type."""
-        pytest.skip("Registry not yet implemented")
+        from entity_store.neon_client import NeonClient
+        from entity_store.registry import EntityRegistry
+
+        client = NeonClient()
+        registry = EntityRegistry(client)
+
+        # Register multiple entities
+        class_entity = Entity(
+            entity_name="TestClass",
+            entity_type_id=EntityType.CLASS,
+            entity_path="test/file.py",
+            entity_line_start=1,
+        )
+        func_entity = Entity(
+            entity_name="TestFunction",
+            entity_type_id=EntityType.FUNCTION,
+            entity_path="test/file.py",
+            entity_line_start=10,
+        )
+
+        registry.register(class_entity)
+        registry.register(func_entity)
+
+        # Filter by type
+        classes = registry.filter(type_id=EntityType.CLASS)
+        assert len(classes) == 1
+        assert classes[0].entity_name == "TestClass"
+
+        functions = registry.filter(type_id=EntityType.FUNCTION)
+        assert len(functions) == 1
+        assert functions[0].entity_name == "TestFunction"
 
     def test_update_entity(self) -> None:
         """Test updating an entity."""
-        pytest.skip("Registry not yet implemented")
+        from entity_store.neon_client import NeonClient
+        from entity_store.registry import EntityRegistry
+
+        client = NeonClient()
+        registry = EntityRegistry(client)
+
+        entity = Entity(
+            entity_name="TestClass",
+            entity_type_id=EntityType.CLASS,
+            entity_path="test/file.py",
+            entity_line_start=1,
+        )
+
+        entity_id = registry.register(entity)
+
+        # Update entity
+        updated = registry.update(entity_id, entity_docstring="Updated docstring")
+        assert updated.entity_docstring == "Updated docstring"
+
+        # Verify update persisted
+        retrieved = registry.get(entity_id)
+        assert retrieved.entity_docstring == "Updated docstring"
 
     def test_archive_entity(self) -> None:
         """Test archiving an entity."""
-        pytest.skip("Registry not yet implemented")
+        from entity_store.neon_client import NeonClient
+        from entity_store.registry import EntityRegistry
+
+        client = NeonClient()
+        registry = EntityRegistry(client)
+
+        entity = Entity(
+            entity_name="TestClass",
+            entity_type_id=EntityType.CLASS,
+            entity_path="test/file.py",
+            entity_line_start=1,
+        )
+
+        entity_id = registry.register(entity)
+
+        # Archive entity
+        registry.archive(entity_id)
+
+        # Verify entity state is archived
+        retrieved = registry.get(entity_id)
+        assert retrieved.entity_state == EntityState.ARCHIVED
+
+    def test_parse_file_python(self) -> None:
+        """Test parsing a Python file."""
+        import tempfile
+
+        from entity_store.neon_client import NeonClient
+        from entity_store.registry import EntityRegistry
+
+        client = NeonClient()
+        registry = EntityRegistry(client)
+
+        # Create temp Python file
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
+            f.write('''
+class MyClass:
+    """A test class."""
+    pass
+''')
+            filepath = Path(f.name)
+
+        try:
+            entities = registry.parse_file(filepath)
+            assert len(entities) == 1
+            assert entities[0].entity_name == "MyClass"
+            assert entities[0].entity_type_id == EntityType.CLASS
+        finally:
+            filepath.unlink()
 
 
 class TestEntityQuery:
