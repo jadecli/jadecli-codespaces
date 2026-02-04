@@ -90,20 +90,113 @@ class TestPythonParser:
 
     def test_parse_class(self) -> None:
         """Test parsing a Python class definition."""
-        # Stub test - implementation pending
-        pytest.skip("Parser not yet implemented")
+        from pathlib import Path
+
+        from entity_store.parsers.python_parser import PythonParser
+
+        source = '''
+class MyClass:
+    """A test class."""
+    pass
+'''
+        parser = PythonParser()
+        entities = parser.parse(Path("test.py"), source.strip())
+
+        assert len(entities) == 1
+        assert entities[0].entity_name == "MyClass"
+        assert entities[0].entity_type_id == EntityType.CLASS
+        assert entities[0].entity_docstring == "A test class."
+        assert entities[0].entity_line_start == 1
 
     def test_parse_function(self) -> None:
         """Test parsing a Python function definition."""
-        pytest.skip("Parser not yet implemented")
+        from pathlib import Path
+
+        from entity_store.parsers.python_parser import PythonParser
+
+        source = '''
+def my_function(arg1: str, arg2: int) -> bool:
+    """A test function."""
+    return True
+'''
+        parser = PythonParser()
+        entities = parser.parse(Path("test.py"), source.strip())
+
+        assert len(entities) == 1
+        assert entities[0].entity_name == "my_function"
+        assert entities[0].entity_type_id == EntityType.FUNCTION
+        assert entities[0].entity_docstring == "A test function."
+        assert "arg1" in entities[0].entity_signature
+        assert "arg2" in entities[0].entity_signature
 
     def test_parse_method(self) -> None:
         """Test parsing a Python method definition."""
-        pytest.skip("Parser not yet implemented")
+        from pathlib import Path
+
+        from entity_store.parsers.python_parser import PythonParser
+
+        source = '''
+class MyClass:
+    """A test class."""
+
+    def my_method(self, arg: str) -> None:
+        """A test method."""
+        pass
+'''
+        parser = PythonParser()
+        entities = parser.parse(Path("test.py"), source.strip())
+
+        # Should get class + method
+        assert len(entities) >= 2
+        class_entity = next(e for e in entities if e.entity_type_id == EntityType.CLASS)
+        method_entity = next(
+            e for e in entities if e.entity_type_id == EntityType.METHOD
+        )
+
+        assert class_entity.entity_name == "MyClass"
+        assert method_entity.entity_name == "my_method"
+        assert method_entity.entity_parent_id == class_entity.entity_id
 
     def test_parse_nested_class(self) -> None:
         """Test parsing nested class definitions."""
-        pytest.skip("Parser not yet implemented")
+        from pathlib import Path
+
+        from entity_store.parsers.python_parser import PythonParser
+
+        source = '''
+class OuterClass:
+    """Outer class."""
+
+    class InnerClass:
+        """Inner class."""
+        pass
+'''
+        parser = PythonParser()
+        entities = parser.parse(Path("test.py"), source.strip())
+
+        assert len(entities) == 2
+        outer = next(e for e in entities if e.entity_name == "OuterClass")
+        inner = next(e for e in entities if e.entity_name == "InnerClass")
+
+        assert inner.entity_parent_id == outer.entity_id
+
+    def test_parse_async_function(self) -> None:
+        """Test parsing async function definitions."""
+        from pathlib import Path
+
+        from entity_store.parsers.python_parser import PythonParser
+
+        source = '''
+async def async_function() -> None:
+    """An async function."""
+    pass
+'''
+        parser = PythonParser()
+        entities = parser.parse(Path("test.py"), source.strip())
+
+        assert len(entities) == 1
+        assert entities[0].entity_name == "async_function"
+        assert entities[0].entity_type_id == EntityType.FUNCTION
 
 
 class TestTypeScriptParser:
